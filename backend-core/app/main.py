@@ -5,13 +5,21 @@ from app.api.api import api_router
 from app.core.config import settings
 from app.db.session import init_db
 import app.models # Important: Import models to register them with SQLModel metadata
+import asyncio
+from app.websocket_listener import listen_for_ws_updates
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Initialize DB
     await init_db()
+    
+    # Start Redis Pub/Sub listener for WebSockets
+    ws_task = asyncio.create_task(listen_for_ws_updates())
+    
     yield
+    
     # Shutdown: Clean up resources (if any)
+    ws_task.cancel()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

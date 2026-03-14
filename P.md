@@ -51,7 +51,6 @@ The system must continuously improve detection accuracy by learning from histori
 
 Incident state updates must be stored in a database and broadcast via WebSocket to:
 * **SOC Dashboard Website**
-* **Browser Security Copilot Extension**
 
 ---
 
@@ -71,11 +70,6 @@ Incident state updates must be stored in a database and broadcast via WebSocket 
 * **Visualization:** Charts library
 * **Real-time:** WebSocket client
 
-### Browser Extension
-* **Standard:** Chrome Manifest V3
-* **UI:** React Popup UI
-* **Real-time:** Background WebSocket listener
-
 ### Sensor Agent
 * **Implementation:** Python lightweight daemon
 * **Functions:** Log file tailing, structured event generation
@@ -90,7 +84,6 @@ multi-agent-cyber-defense/
 ├── sensor-agent/
 ├── backend-core/
 ├── dashboard-frontend/
-├── browser-extension/
 ├── infra/
 └── docs/
 ```
@@ -131,7 +124,7 @@ multi-agent-cyber-defense/
   * Sensor container integration
   * Environment configuration and networking
 
-### Developer B — Frontend + Extension + UX + Documentation Owner
+### Developer B — Frontend + UX + Documentation Owner
 
 **Owns:**
 
@@ -148,16 +141,6 @@ multi-agent-cyber-defense/
   * WebSocket client integration
   * API service layer
   * Global state management
-
-* **`browser-extension/`**
-  * Manifest configuration
-  * Popup UI layout
-  * Threat severity badge state logic
-  * Background persistent socket listener
-  * Incident summary cards
-  * Mini Copilot chat interface
-  * Manual response action buttons
-  * Deep link navigation to dashboard
 
 * **`docs/`**
   * Architecture diagrams
@@ -225,16 +208,6 @@ multi-agent-cyber-defense/
 
 ---
 
-## Extension Features
-
-* Dynamic badge color based on threat severity
-* Popup showing latest incident summary
-* Mini AI chat to query incident context
-* Manual response control buttons
-* Open dashboard deep link
-
----
-
 ## Mandatory Demo Scenario
 
 1. Start full system using Docker Compose.
@@ -244,8 +217,7 @@ multi-agent-cyber-defense/
 5. Investigation reasoning steps displayed.
 6. Risk score escalates.
 7. Firewall rule automatically applied.
-8. Extension notification appears.
-9. Copilot explains attack classification.
+8. Copilot explains attack classification.
 
 ---
 

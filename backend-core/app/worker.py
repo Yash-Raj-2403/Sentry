@@ -170,6 +170,21 @@ class Worker:
                                                 f"[Worker] Embedding storage failed "
                                                 f"(non-critical): {embed_err}"
                                             )
+                                        
+                                        # ── Publish to WebSockets ─────────────
+                                        try:
+                                            await self.redis.publish(
+                                                "sentry_ws_updates",
+                                                json.dumps({
+                                                    "type": "NEW_INCIDENT",
+                                                    "incident_id": new_incident.id,
+                                                    "incident_data": incident_data,
+                                                    "risk_score": result_state.get("risk_score"),
+                                                    "actions_taken": result_state.get("actions_queue")
+                                                })
+                                            )
+                                        except Exception as pub_err:
+                                            logger.error(f"[Worker] Failed to publish WS update: {pub_err}")
 
                                     logger.info(
                                         f"Graph execution finished. "
