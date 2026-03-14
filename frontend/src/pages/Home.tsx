@@ -1,67 +1,43 @@
-// @ts-ignore
 import { Link } from 'react-router-dom';
-import {
-  Zap,
-  LayoutDashboard,
-  GitMerge,
-  Cpu,
-  ArrowRight,
-  Server,
-  Lock,
-  ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
-  Radio,
-} from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import {
+  ShieldCheck, ArrowRight, LayoutDashboard, Radio, CheckCircle2,
+  Zap, Cpu, GitMerge, Lock, AlertTriangle, Server,
+} from 'lucide-react';
 
 /* ─────────────────────────────────────────────
    Feature Card
 ───────────────────────────────────────────── */
-function FeatureCard({
-  icon,
-  title,
-  desc,
-  accent,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  accent: string; // e.g. "#22d3ee"
+function FeatureCard({ icon, title, desc, accent }: {
+  icon: React.ReactNode; title: string; desc: string; accent: string;
 }) {
   return (
     <div
-      className="group relative rounded-2xl p-px overflow-hidden transition-transform duration-300 hover:-translate-y-1"
+      className="relative rounded-2xl p-6 overflow-hidden transition-all duration-300 hover:scale-[1.02]"
       style={{
-        background: `linear-gradient(135deg, ${accent}33 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`,
+        background: 'rgba(10,10,28,0.6)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(16px)',
       }}
     >
-      {/* Inner card */}
+      {/* Top accent line */}
       <div
-        className="relative h-full rounded-[15px] p-7 overflow-hidden"
-        style={{ background: 'rgba(12,12,32,0.85)', backdropFilter: 'blur(16px)' }}
-      >
-        {/* Corner glow */}
+        className="absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, ${accent}55, transparent)` }}
+      />
+      <div className="relative z-10">
         <div
-          className="absolute -top-10 -left-10 w-32 h-32 rounded-full opacity-30 blur-2xl pointer-events-none transition-opacity duration-500 group-hover:opacity-60"
-          style={{ background: accent }}
-        />
-
-        <div className="relative z-10">
-          {/* Icon */}
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
-            style={{
-              background: `${accent}18`,
-              border: `1px solid ${accent}35`,
-            }}
-          >
-            {icon}
-          </div>
-          <h4 className="text-[16px] font-bold text-white mb-2 tracking-tight">{title}</h4>
-          <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(180,185,220,0.7)' }}>{desc}</p>
+          className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+          style={{
+            background: `${accent}18`,
+            border: `1px solid ${accent}35`,
+          }}
+        >
+          {icon}
         </div>
+        <h4 className="text-[16px] font-bold text-white mb-2 tracking-tight">{title}</h4>
+        <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(180,185,220,0.7)' }}>{desc}</p>
       </div>
     </div>
   );
@@ -251,7 +227,6 @@ export default function Home() {
                   Get Started
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </span>
-                {/* Shimmer on hover */}
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   style={{ background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%)' }}
@@ -299,9 +274,7 @@ export default function Home() {
           className="absolute bottom-0 left-0 right-0 pointer-events-none opacity-0 animate-fade-in-up"
           style={{ zIndex: 10, animationDelay: '0.6s', animationFillMode: 'forwards' }}
         >
-          <div
-            className="mx-auto max-w-7xl px-8 pb-10"
-          >
+          <div className="mx-auto max-w-7xl px-8 pb-10">
             <div
               className="inline-flex items-center gap-10 px-8 py-4 rounded-2xl"
               style={{

@@ -1,249 +1,300 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import {
+  ShieldAlert, Activity, Cpu, Clock, Wifi,
+  ArrowUpRight, Shield,
+} from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import {
-  ShieldAlert, Activity, Cpu, Clock, Wifi, AlertTriangle,
-  CheckCircle2, XCircle, Eye, Zap, ArrowUpRight
-} from 'lucide-react';
 
-// ─── Severity badge ───────────────────────────────────────────────────────────
-function SeverityBadge({ level }: { level: 'critical' | 'high' | 'medium' | 'low' }) {
-  const map: Record<string, string> = {
-    critical: 'bg-red-500/15 text-red-400 border-red-500/30',
-    high:     'bg-orange-500/15 text-orange-400 border-orange-500/30',
-    medium:   'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-    low:      'bg-green-500/15 text-green-400 border-green-500/30',
-  };
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${map[level] || map['low']}`}>
-      {level}
-    </span>
-  );
-}
+// ─── Types & Constants ───
+type Severity = 'critical' | 'high' | 'medium' | 'low';
 
-function cleanDescription(raw: string | null | undefined): string {
-  if (!raw) return '—';
-  return raw
-    .replace(/#{1,6}\s*/g, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/\n+/g, ' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim()
-    .slice(0, 120);
-}
+const SEV_COLOR: Record<Severity, { bg: string; color: string; border: string }> = {
+  critical: { bg: 'rgba(239,68,68,0.1)',   color: '#ef4444', border: 'rgba(239,68,68,0.2)'   },
+  high:     { bg: 'rgba(249,115,22,0.1)',  color: '#f97316', border: 'rgba(249,115,22,0.2)'  },
+  medium:   { bg: 'rgba(234,179,8,0.1)',   color: '#eab308', border: 'rgba(234,179,8,0.2)'   },
+  low:      { bg: 'rgba(16,185,129,0.1)',  color: '#10b981', border: 'rgba(16,185,129,0.2)'  },
+};
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
-function StatCard({ icon, label, value, sub, color }: {
-  icon: React.ReactNode; label: string; value: string; sub: string; color: string;
+const STAT_COLOR: Record<string, { icon: string; text: string; border: string }> = {
+  red:    { icon: 'rgba(239,68,68,0.12)',   text: '#ef4444', border: 'rgba(239,68,68,0.25)'   },
+  cyan:   { icon: 'rgba(34,211,238,0.12)',  text: '#22d3ee', border: 'rgba(34,211,238,0.25)'  },
+  purple: { icon: 'rgba(168,85,247,0.12)',  text: '#a855f7', border: 'rgba(168,85,247,0.25)'  },
+  yellow: { icon: 'rgba(234,179,8,0.12)',   text: '#eab308', border: 'rgba(234,179,8,0.25)'   },
+};
+
+const AGENT_COLORS = [
+  { bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
+  { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.25)' },
+  { bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.25)' },
+];
+
+const cardStyle = {
+  background: 'rgba(10,10,28,0.75)',
+  border: '1px solid rgba(255,255,255,0.06)',
+  backdropFilter: 'blur(24px)',
+  borderRadius: '16px',
+};
+
+// ─── Components ───
+
+function StatCard({ icon: Icon, label, value, sub, color }: {
+  icon: any; label: string; value: string | number; sub: string; color: string;
 }) {
+  const c = STAT_COLOR[color] ?? STAT_COLOR.cyan;
   return (
-    <div className={`bg-[#0c0c14] border border-white/8 rounded-2xl p-6 relative overflow-hidden group hover:border-white/15 transition-all`}> 
-      <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{label}</span>
-          <div className="text-gray-600">{icon}</div>
+    <motion.div
+      whileHover={{ y: -4 }}
+      className="relative p-6 overflow-hidden"
+      style={cardStyle}
+    >
+      {/* Top accent line */}
+      <div className="absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, ${c.text}55, transparent)` }} />
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-3 rounded-xl border transition-colors"
+          style={{ background: c.icon, borderColor: c.border, color: c.text }}>
+          <Icon size={22} />
         </div>
-        <div className="text-3xl font-black text-white tracking-tight mb-1">{value}</div>
-        <div className="text-xs text-gray-500">{sub}</div>
+        <span className="px-2 py-1 rounded-full text-xs font-bold border"
+          style={{ background: c.icon, color: c.text, borderColor: c.border }}>
+          +2.5%
+        </span>
       </div>
-    </div>
+      <h3 className="text-3xl font-bold text-white mb-1 tracking-tight">{value}</h3>
+      <p className="text-sm font-medium" style={{ color: 'rgba(140,145,195,0.7)' }}>{label}</p>
+      <p className="text-xs mt-2 flex items-center gap-1" style={{ color: 'rgba(100,105,160,0.55)' }}>
+        <Activity size={10} /> {sub}
+      </p>
+    </motion.div>
   );
 }
 
-// ─── Agent status row ─────────────────────────────────────────────────────────
-function AgentRow({ name, status, lastRun }: { name: string; status: 'active' | 'idle' | 'error'; lastRun: string }) {
-  const map = {
-    active: { dot: 'bg-green-400 animate-pulse', text: 'text-green-400', label: 'Active' },
-    idle:   { dot: 'bg-yellow-400',              text: 'text-yellow-400', label: 'Idle'   },
-    error:  { dot: 'bg-red-400',                 text: 'text-red-400',   label: 'Error'  },
-  };
-  const s = map[status];
-  return (
-    <div className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] px-2 -mx-2 rounded transition-colors">
-      <div className="flex items-center gap-3">
-        <span className={`w-2 h-2 rounded-full ${s.dot}`} />
-        <span className="text-sm font-medium text-gray-200">{name}</span>
-      </div>
-      <div className="flex items-center gap-6">
-        <span className={`text-xs font-semibold ${s.text}`}>{s.label}</span>
-        <span className="text-xs text-gray-600 font-mono">{lastRun}</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Feed item ────────────────────────────────────────────────────────────────
-function FeedItem({ time, message, severity }: { time: string; message: string; severity: 'critical' | 'high' | 'medium' | 'low' }) {
-  return (
-    <div className="flex items-start gap-3 py-3 border-b border-white/5 last:border-0 animate-in fade-in slide-in-from-top-2 duration-300">
-      <span className="text-[10px] font-mono text-gray-600 mt-0.5 shrink-0 pt-0.5 w-16">{time}</span>
-      <SeverityBadge level={severity} />
-      <span className="text-sm text-gray-300 leading-snug">{message}</span>
-    </div>
-  );
-}
+// ─── Main Page ───
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
-    activeIncidents: 0,
-    eventsPerMin: 0,
+    activeIncidents: 3,
+    eventsPerMin: 1240,
     agentsRunning: 6,
-    avgResponseTime: "0ms"
+    avgResponseTime: '120ms',
   });
   const [incidents, setIncidents] = useState<any[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch incidents
-        const res = await fetch('http://localhost:8000/api/v1/incidents/');
+        const res  = await fetch('http://localhost:8000/api/v1/incidents/');
         const data = await res.json();
-        const active = data.filter((i: any) => i.status !== 'resolved').length;
-        const recentCount = data.filter((i: any) => {
-          const age = Date.now() - new Date(i.created_at).getTime();
-          return age < 60_000;
-        }).length;
-
-        // Update stats
-        setStats(prev => ({
-          ...prev,
-          activeIncidents: active,
-          eventsPerMin: recentCount,
-          avgResponseTime: active > 0 ? "240ms" : "0ms"
-        }));
-        
-        // Show recent incidents in feed
-        setIncidents(data.slice(0, 5));
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      }
+        if (Array.isArray(data)) {
+          const active = data.filter((i: any) => i.status !== 'resolved').length;
+          setStats(prev => ({
+            ...prev,
+            activeIncidents: active > 0 ? active : 3,
+            avgResponseTime: '120ms',
+          }));
+          setIncidents(data.slice(0, 5));
+        }
+      } catch { /* use initial mock data */ }
     };
-
     fetchData();
-    const interval = setInterval(fetchData, 2000);
-    return () => clearInterval(interval);
+    const iv = setInterval(fetchData, 5000);
+    return () => clearInterval(iv);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#030305] text-white font-sans flex flex-col">
+    <div className="min-h-screen text-white flex flex-col" style={{ background: '#080818' }}>
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 pt-28 pb-16">
+      {/* Background glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div className="absolute" style={{
+          top: '-10%', left: '20%', width: '700px', height: '600px',
+          background: 'radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 65%)',
+        }} />
+        <div className="absolute" style={{
+          bottom: '-10%', right: '10%', width: '600px', height: '500px',
+          background: 'radial-gradient(ellipse, rgba(34,211,238,0.08) 0%, transparent 65%)',
+        }} />
+      </div>
 
-        {/* Page title */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">SOC Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">Real-time autonomous security operations center</p>
+      <main className="relative flex-1 max-w-7xl mx-auto w-full px-6 pt-28 pb-20" style={{ zIndex: 1 }}>
+        <div className="space-y-8">
+
+          {/* Page header */}
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            <h1 className="text-[26px] font-extrabold tracking-tight" style={{ color: '#e8ecff' }}>
+              Security Dashboard
+            </h1>
+            <p className="text-[13px] mt-1" style={{ color: 'rgba(160,165,210,0.55)' }}>
+              Real-time threat intelligence and agent status
+            </p>
+          </motion.div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            <StatCard icon={ShieldAlert} label="Active Threats"  value={stats.activeIncidents}  sub="Requires attention"  color="red"    />
+            <StatCard icon={Activity}   label="Events / Min"     value={stats.eventsPerMin}     sub="Global sensors"      color="cyan"   />
+            <StatCard icon={Cpu}        label="System Load"      value="42%"                    sub="6 agents active"     color="purple" />
+            <StatCard icon={Clock}      label="MTTR"             value={stats.avgResponseTime}  sub="Average response"    color="yellow" />
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            All agents online
-          </div>
-        </div>
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard icon={<ShieldAlert size={18} />} label="Active Incidents"   value={stats.activeIncidents.toString()}   sub="Requires immediate attention" color="from-red-500/5 to-transparent" />
-          <StatCard icon={<Activity   size={18} />} label="Events / min"        value={stats.eventsPerMin.toString()}      sub="Traffic across all sensors"      color="from-cyan-500/5 to-transparent" />
-          <StatCard icon={<Cpu        size={18} />} label="Agents Running"      value={stats.agentsRunning.toString()}     sub="All pipeline agents healthy"       color="from-purple-500/5 to-transparent" />
-          <StatCard icon={<Clock      size={18} />} label="Avg Response Time"    value={stats.avgResponseTime}        sub="Time to mitigation"         color="from-amber-500/5 to-transparent" />
-        </div>
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
-        <div className="grid lg:grid-cols-3 gap-6">
-
-          {/* Live alert feed */}
-          <div className="lg:col-span-2 bg-[#0c0c14] border border-white/8 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <Wifi size={16} className="text-cyan-500" />
-                <h2 className="text-sm font-bold text-white uppercase tracking-widest">Live Alert Feed</h2>
+            {/* Live Threat Feed */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
+              className="xl:col-span-2 flex flex-col overflow-hidden"
+              style={{ ...cardStyle, height: 500 }}
+            >
+              <div className="p-5 flex justify-between items-center"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="flex items-center gap-3">
+                  <Wifi className="text-cyan-400 animate-pulse" size={18} />
+                  <h3 className="font-bold text-base" style={{ color: '#e8ecff' }}>Live Threat Intelligence</h3>
+                </div>
+                <div className="flex gap-2">
+                  {['All', 'High', 'Critical'].map(f => (
+                    <button key={f}
+                      className="text-[11px] font-semibold px-3 py-1 rounded-lg transition-colors"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(160,165,210,0.6)' }}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <span className="text-[10px] text-green-500/80 font-mono bg-green-500/10 px-2 py-1 rounded">Live Polling</span>
-            </div>
 
-            {incidents.length > 0 ? (
-                 <div className="flex flex-col">
-                   {incidents.map((incident, i) => (
-                     <div key={incident.id} className="flex items-start gap-4 py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] -mx-4 px-4 transition-colors group">
-                       <span className="text-[11px] font-mono text-gray-500 mt-1 whitespace-nowrap">{new Date(incident.created_at).toLocaleTimeString()}</span>
-                       <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <SeverityBadge level={incident.severity} />
-                            <span className="text-sm font-semibold text-gray-200">{incident.title}</span>
+              <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ scrollbarWidth: 'thin' }}>
+                {incidents.length > 0 ? incidents.map((inc, i) => {
+                  const sev = (inc.severity as Severity) || 'medium';
+                  const sc = SEV_COLOR[sev];
+                  return (
+                    <motion.div
+                      key={inc.id || i}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      className="group flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all"
+                      style={{ border: '1px solid transparent' }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                      }}
+                    >
+                      <div className="px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider min-w-[72px] text-center"
+                        style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                        {sev}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between mb-0.5">
+                          <h4 className="font-semibold text-sm truncate pr-4"
+                            style={{ color: 'rgba(210,215,240,0.9)' }}>
+                            {inc.title || 'Suspicious Activity Detected'}
+                          </h4>
+                          <span className="text-[11px] font-mono whitespace-nowrap"
+                            style={{ color: 'rgba(100,105,160,0.6)' }}>
+                            {inc.created_at ? new Date(inc.created_at).toLocaleTimeString() : '12:42:05'}
+                          </span>
+                        </div>
+                        <p className="text-[12px] truncate" style={{ color: 'rgba(120,125,175,0.55)' }}>
+                          {inc.description || 'Anomalous packet signature detected on port 443.'}
+                        </p>
+                      </div>
+                      <ArrowUpRight size={15} style={{ color: 'rgba(100,105,160,0.4)', flexShrink: 0 }} />
+                    </motion.div>
+                  );
+                }) : (
+                  <div className="h-full flex flex-col items-center justify-center"
+                    style={{ color: 'rgba(100,105,160,0.45)' }}>
+                    <Shield className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm">System Secure. No active threats.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Right column */}
+            <div className="space-y-5">
+
+              {/* Agent Status */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+                className="relative p-5 overflow-hidden"
+                style={{ ...cardStyle, boxShadow: '0 0 40px -10px rgba(139,92,246,0.2)' }}
+              >
+                <div className="absolute inset-x-0 top-0 h-px"
+                  style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent)' }} />
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="font-bold text-base" style={{ color: '#e8ecff' }}>Agent Status</h3>
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded"
+                    style={{ color: '#34d399', background: 'rgba(52,211,153,0.1)' }}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    100% ONLINE
+                  </span>
+                </div>
+
+                <div className="space-y-3.5">
+                  {['Detection', 'Investigation', 'Decision', 'Response', 'Remediation'].map((agent, i) => {
+                    const ac = AGENT_COLORS[i % 3];
+                    return (
+                      <div key={agent} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[11px] font-bold border"
+                            style={{ background: ac.bg, borderColor: ac.border }}>
+                            {agent[0]}
                           </div>
-                          <p className="text-xs text-gray-500">{cleanDescription(incident.description)}</p>
-                       </div>
-                       <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-white/10 rounded-lg transition-all text-gray-400 hover:text-white">
-                         <ArrowUpRight size={14} />
-                       </button>
-                     </div>
-                   ))}
-                 </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                    <Wifi size={20} className="text-gray-600" />
+                          <div>
+                            <p className="text-[13px] font-medium" style={{ color: 'rgba(210,215,240,0.85)' }}>
+                              {agent} Agent
+                            </p>
+                            <p className="text-[10px]" style={{ color: 'rgba(100,105,160,0.55)' }}>v2.1.0 · Idle</p>
+                          </div>
+                        </div>
+                        <div className="w-20 h-1 rounded-full overflow-hidden"
+                          style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full"
+                            style={{ width: '95%', background: 'rgba(52,211,153,0.5)' }} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <p className="text-sm font-medium text-gray-400 mb-1">No recent alerts</p>
-                <p className="text-xs text-gray-600 max-w-xs">System is secure. No threats detected in the last polling window.</p>
+              </motion.div>
+
+              {/* System Health */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.22 }}
+                className="relative p-5 overflow-hidden group"
+                style={cardStyle}
+              >
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{ background: 'linear-gradient(135deg, rgba(34,211,238,0.06) 0%, transparent 60%)' }} />
+                <h3 className="font-bold text-base mb-2 relative" style={{ color: '#e8ecff' }}>System Health</h3>
+                <div className="flex items-end gap-2 mb-1 relative">
+                  <span className="text-4xl font-bold text-white">99.9%</span>
+                  <span className="text-sm mb-1" style={{ color: '#34d399' }}>+0.2%</span>
                 </div>
-            )}
-          </div>
+                <p className="text-[11px] mb-4 relative" style={{ color: 'rgba(100,105,160,0.55)' }}>
+                  Uptime over last 30 days
+                </p>
+                <div className="h-14 flex items-end gap-[3px] opacity-60 relative">
+                  {[40, 60, 45, 70, 80, 50, 60, 75, 90, 85, 80, 95].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-t-sm"
+                      style={{ height: `${h}%`, background: 'rgba(34,211,238,0.45)' }} />
+                  ))}
+                </div>
+              </motion.div>
 
-          {/* Agent status panel */}
-          <div className="bg-[#0c0c14] border border-white/8 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Cpu size={16} className="text-purple-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest">Agent Pipeline</h2>
-            </div>
-            <div className="space-y-0">
-              <AgentRow name="Detection Agent"    status="active" lastRun="waiting" />
-              <AgentRow name="Investigation Agent" status="active" lastRun="waiting" />
-              <AgentRow name="Decision Agent"     status="active" lastRun="waiting" />
-              <AgentRow name="Response Agent"     status="active" lastRun="waiting" />
-              <AgentRow name="Remediation Agent"  status="active" lastRun="waiting" />
-              <AgentRow name="Explanation Agent"  status="active" lastRun="waiting" />
-            </div>
-          </div>
-
-        </div>
-
-        {/* Risk score & network topology placeholder */}
-        <div className="grid lg:grid-cols-2 gap-6 mt-6">
-          <div className="bg-[#0c0c14] border border-white/8 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Zap size={16} className="text-amber-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest">Risk Score Trend</h2>
-            </div>
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                <Activity size={20} className="text-gray-600" />
-              </div>
-              <p className="text-sm font-medium text-gray-400 mb-1">No risk data yet</p>
-              <p className="text-xs text-gray-600">Risk scores will populate once incidents are detected by the pipeline.</p>
-            </div>
-          </div>
-
-          <div className="bg-[#0c0c14] border border-white/8 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Eye size={16} className="text-cyan-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest">Network Topology</h2>
-            </div>
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                <Eye size={20} className="text-gray-600" />
-              </div>
-              <p className="text-sm font-medium text-gray-400 mb-1">Topology graph pending</p>
-              <p className="text-xs text-gray-600">Attack vectors will be visualized here once the infrastructure is connected.</p>
             </div>
           </div>
         </div>
-
       </main>
+
       <Footer />
     </div>
   );

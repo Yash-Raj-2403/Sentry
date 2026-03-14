@@ -6,14 +6,14 @@ import { useAuth } from '../context/AuthContext';
 const NAV_LINKS = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Incidents', to: '/incidents' },
-  { label: 'Agents', to: '/agents' },
-  { label: 'Reports', to: '/reports' },
+  { label: 'Agents',    to: '/agents'    },
+  { label: 'Reports',   to: '/reports'   },
 ];
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled,       setScrolled]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userMenuOpen,   setUserMenuOpen]   = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,144 +35,177 @@ export default function Header() {
     navigate('/login', { replace: true });
   };
 
-  // Derive a short display name from the session
-  const displayName = user?.user_metadata?.full_name as string | undefined
+  const displayName = (user?.user_metadata?.full_name as string | undefined)
     ?? user?.email?.split('@')[0]
     ?? 'User';
 
   const avatarInitials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+    .split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${scrolled
-        ? 'bg-[#030305]/80 backdrop-blur-md border-white/10 py-4 shadow-lg shadow-blue-900/5'
-        : 'bg-transparent border-transparent py-6'
-        }`}
-    >
+      className="fixed top-0 w-full z-50 transition-all duration-300"
+      style={{
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
+        background: scrolled
+          ? 'rgba(8,8,24,0.85)'
+          : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
+        padding: scrolled ? '14px 0' : '22px 0',
+      }}>
+
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white overflow-hidden shadow-lg shadow-blue-600/20 group-hover:scale-105 transition-transform duration-300">
-            <ShieldCheck size={20} className="relative z-10" />
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105"
+            style={{
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              boxShadow: '0 0 20px rgba(99,102,241,0.35)',
+            }}>
+            <ShieldCheck size={18} className="text-white" />
           </div>
-          <span className="text-xl font-bold text-white tracking-tight">CyberHelm</span>
+          <span className="text-[18px] font-extrabold tracking-tight" style={{ color: '#e8ecff' }}>
+            CyberHelm
+          </span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map(({ label, to }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`text-sm font-medium transition-colors ${location.pathname === to ? 'text-cyan-400' : 'text-gray-400 hover:text-white'
-                }`}
-            >
-              {label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center gap-1">
+          {NAV_LINKS.map(({ label, to }) => {
+            const active = location.pathname === to;
+            return (
+              <Link key={to} to={to}
+                className="relative px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200"
+                style={{
+                  color: active ? '#e8ecff' : 'rgba(160,165,210,0.6)',
+                  background: active ? 'rgba(99,102,241,0.12)' : 'transparent',
+                  border: active ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+                }}
+                onMouseEnter={e => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.color = '#e8ecff';
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.color = 'rgba(160,165,210,0.6)';
+                    (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  }
+                }}>
+                {label}
+                {active && (
+                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"
+                    style={{ background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Desktop right section */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* Desktop right */}
+        <div className="hidden md:flex items-center gap-3">
           {user ? (
-            /* ── Signed-in user menu ── */
             <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 text-white text-sm"
-              >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+              <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(210,215,240,0.85)',
+                }}>
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
                   {avatarInitials}
                 </div>
-                <span className="max-w-[130px] truncate font-medium">{displayName}</span>
-                <ChevronDown size={14} className={`text-gray-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                <span className="text-[13px] font-medium max-w-[130px] truncate">{displayName}</span>
+                <ChevronDown size={13} style={{ opacity: 0.5, transform: userMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-52 bg-[#0c0c18]/95 border border-white/10 rounded-2xl shadow-xl backdrop-blur-lg overflow-hidden">
-                  <div className="px-4 py-3 border-b border-white/8">
-                    <p className="text-xs font-semibold text-white truncate">{displayName}</p>
-                    <p className="text-[11px] text-gray-500 truncate mt-0.5">{user.email}</p>
+                <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl overflow-hidden shadow-xl"
+                  style={{ background: 'rgba(12,12,30,0.98)', border: '1px solid rgba(255,255,255,0.09)', backdropFilter: 'blur(20px)' }}>
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p className="text-[12px] font-semibold truncate" style={{ color: '#e8ecff' }}>{displayName}</p>
+                    <p className="text-[11px] truncate mt-0.5" style={{ color: 'rgba(120,125,175,0.6)' }}>{user.email}</p>
                   </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-                  >
-                    <LogOut size={14} />
+                  <button onClick={handleSignOut}
+                    className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] transition-colors"
+                    style={{ color: '#f43f5e' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(244,63,94,0.08)')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}>
+                    <LogOut size={13} />
                     Sign out
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            /* ── Signed-out (public) buttons ── */
             <>
-              <Link to="/login" className="text-sm font-bold text-gray-300 hover:text-white transition-colors">
+              <Link to="/login" className="text-[13px] font-semibold transition-colors"
+                style={{ color: 'rgba(160,165,210,0.7)' }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e8ecff')}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(160,165,210,0.7)')}>
                 Log in
               </Link>
-              <Link
-                to="/register"
-                className="px-5 py-2.5 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-200 transition-all shadow-lg shadow-white/5 flex items-center gap-2 group"
-              >
+              <Link to="/register"
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all duration-200 hover:scale-[1.03]"
+                style={{
+                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  boxShadow: '0 0 20px -4px rgba(99,102,241,0.5)',
+                }}>
                 Get Started
-                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight size={14} />
               </Link>
             </>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        {/* Mobile menu button */}
+        <button className="md:hidden p-2 rounded-xl transition-colors"
+          style={{ color: 'rgba(180,185,220,0.8)', background: 'rgba(255,255,255,0.04)' }}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-black/95 border-b border-white/10 p-6 md:hidden shadow-xl backdrop-blur-xl h-screen">
-          <nav className="flex flex-col gap-4 mb-6">
+        <div className="absolute top-full left-0 w-full p-6 md:hidden shadow-xl"
+          style={{ background: 'rgba(8,8,24,0.98)', borderBottom: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)' }}>
+          <nav className="flex flex-col gap-1 mb-6">
             {NAV_LINKS.map(({ label, to }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`text-lg font-medium transition-colors ${location.pathname === to ? 'text-cyan-400' : 'text-gray-300 hover:text-white'
-                  }`}
-              >
+              <Link key={to} to={to}
+                className="px-4 py-3 rounded-xl text-[15px] font-semibold transition-colors"
+                style={{
+                  color: location.pathname === to ? '#e8ecff' : 'rgba(160,165,210,0.65)',
+                  background: location.pathname === to ? 'rgba(99,102,241,0.1)' : 'transparent',
+                }}>
                 {label}
               </Link>
             ))}
-            <hr className="border-white/10 my-2" />
+          </nav>
+          <div className="border-t pt-5" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             {user ? (
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2 text-lg font-medium text-red-400 hover:text-red-300 text-left"
-              >
-                <LogOut size={18} /> Sign out
+              <button onClick={handleSignOut}
+                className="flex items-center gap-2 text-[15px] font-semibold"
+                style={{ color: '#f43f5e' }}>
+                <LogOut size={16} /> Sign out
               </button>
             ) : (
-              <Link to="/login" className="text-lg font-bold text-gray-300 hover:text-white">
-                Log in
-              </Link>
+              <div className="flex flex-col gap-3">
+                <Link to="/login" className="text-[15px] font-semibold"
+                  style={{ color: 'rgba(160,165,210,0.7)' }}>Log in</Link>
+                <Link to="/register"
+                  className="w-full py-3.5 rounded-xl font-bold text-white text-[15px] flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                  Get Started <ArrowRight size={16} />
+                </Link>
+              </div>
             )}
-          </nav>
-          {!user && (
-            <Link
-              to="/register"
-              className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-900/20 text-lg"
-            >
-              Get Started <ArrowRight size={18} />
-            </Link>
-          )}
+          </div>
         </div>
       )}
     </header>
