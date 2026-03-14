@@ -17,17 +17,30 @@ class DecisionAgent:
             # Decision Matrix
             # Risk = Anomaly Score (Detection) * Velocity (Rate) * Asset Crit (Static 1.0)
             
-            investigation_log.append(f"DECISION: Evaluating risk score {risk_score:.2f}")
+            anomaly_score = state.get("risk_score", 0.0) # Base anomaly from detection
+            attack_velocity = 1.0 # Default multiplier
+            asset_criticality = 1.0 # Default for standard asset
             
-            if risk_score > 0.8:
+            # Simple heuristic for velocity based on previous detection count (stored in investigation log text for MVP)
+            # In production, this would be computed from Redis sliding window
+            if any("Burst" in log for log in investigation_log):
+                attack_velocity = 1.5
+            
+            final_risk = min(1.0, anomaly_score * attack_velocity * asset_criticality)
+            
+            investigation_log.append(f"DECISION: Evaluating Risk Formula: {anomaly_score:.2f} (Anomaly) * {attack_velocity} (Velocity) * {asset_criticality} (Criticality) = {final_risk:.2f}")
+            
+            if final_risk > 0.8:
                 action = "isolate_host"
                 investigation_log.append("DECISION: CRITICAL RISK DETECTED. Recommending host isolation.")
-            elif risk_score > 0.5:
+            elif final_risk > 0.5:
                 action = "block_ip"
                 investigation_log.append(f"DECISION: HIGH RISK. Recommending IP Block for {state.get('incident', {}).get('attacker_ip')}")
             else:
                 action = "monitor"
                 investigation_log.append("DECISION: LOW RISK. Continuing to monitor.")
+            
+            state["risk_score"] = final_risk
                 
             if action != "monitor":
                 actions_queue.append(action)

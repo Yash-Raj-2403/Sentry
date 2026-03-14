@@ -28,4 +28,14 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4-turbo-preview"
 
+    # Groq (High-performance inference)
+    GROQ_API_KEY: Optional[str] = None
+    GROQ_MODEL: str = "mixtral-8x7b-32768"
+
+    # Supabase (External DB & Auth if used)
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_KEY: Optional[str] = None
+
+settings = Settings()
+
 settings = Settings()
