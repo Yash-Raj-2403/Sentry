@@ -1,33 +1,36 @@
-from typing import Optional
-from langchain_openai import ChatOpenAI
-from langchain_groq import ChatGroq
-from app.core.config import Settings
+"""
+LLM Factory: returns the configured Groq chat model.
+
+Groq provides extremely fast inference via their LPU hardware.
+Sign up for a free API key at https://console.groq.com.
+
+Embeddings are handled separately by VectorMemoryService using the local
+HuggingFace sentence-transformers model (no API key required).
+"""
+
 import logging
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-settings = Settings()
 
 def get_llm():
     """
-    Factory function to return the configured LLM instance.
-    Prioritizes Groq if configured, then OpenAI.
+    Returns a ChatGroq instance if GROQ_API_KEY is set, otherwise None.
+    Agents that require an LLM will log a warning and skip LLM steps gracefully.
     """
     if settings.GROQ_API_KEY:
-        logger.info(f"Using Groq LLM with model {settings.GROQ_MODEL}")
+        from langchain_groq import ChatGroq
+
+        logger.info(f"[LLM] Using Groq · model={settings.GROQ_MODEL}")
         return ChatGroq(
             api_key=settings.GROQ_API_KEY,
             model_name=settings.GROQ_MODEL,
-            temperature=0
+            temperature=0,
         )
-    
-    if settings.OPENAI_API_KEY:
-        logger.info(f"Using OpenAI LLM with model {settings.OPENAI_MODEL}")
-        return ChatOpenAI(
-            api_key=settings.OPENAI_API_KEY,
-            model=settings.OPENAI_MODEL,
-            temperature=0
-        )
-    
-    logger.warning("No LLM API keys found (Groq or OpenAI). Agents will fail if they try to invoke LLM.")
+
+    logger.warning(
+        "[LLM] GROQ_API_KEY not set – LLM-powered agents will run in "
+        "offline / fallback mode. Set GROQ_API_KEY in .env to enable."
+    )
     return None
