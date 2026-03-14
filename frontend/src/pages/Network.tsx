@@ -169,7 +169,7 @@ export default function Network() {
                           {inc.severity}
                         </span>
                         <span className="text-[10px] text-gray-600 shrink-0">
-                          {new Date(inc.created_at).toLocaleTimeString()}
+                          {new Date(inc.created_at + 'Z').toLocaleTimeString()}
                         </span>
                         <ChevronRight size={14} className="text-gray-600 group-hover:text-cyan-400 transition-colors shrink-0" />
                       </motion.div>
