@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     """
     Application settings loaded from environment variables.
     """
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     PROJECT_NAME: str = "Sentry: Multi-Agent Cybersecurity Defense Platform"
     API_V1_STR: str = "/api/v1"

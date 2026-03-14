@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { FileText, Shield, Send, Bot, User, DownloadCloud } from 'lucide-react';
@@ -35,16 +35,40 @@ export default function Reports() {
     },
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
-    setMessages((prev) => [
-      ...prev,
-      { role: 'user', content: trimmed },
-      { role: 'assistant', content: 'The backend Copilot API is not yet connected. Once integrated, I will provide contextual analysis and MITRE ATT&CK explanations for each query.' },
-    ]);
+    if (!trimmed || loading) return;
+
+    const userMsg: ChatMessage = { role: 'user', content: trimmed };
+    const history = messages;
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/copilot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: trimmed, history }),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      const data = await res.json();
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Error reaching Copilot backend. Make sure the API server is running.' },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -116,8 +140,8 @@ export default function Reports() {
                 <div className="text-[10px] text-gray-600">AI security assistant</div>
               </div>
               <div className="ml-auto flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                <span className="text-[10px] text-yellow-400 font-semibold">Backend pending</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                <span className="text-[10px] text-green-400 font-semibold">Online</span>
               </div>
             </div>
 
@@ -129,7 +153,7 @@ export default function Reports() {
                     }`}>
                     {msg.role === 'assistant' ? <Bot size={12} /> : <User size={12} />}
                   </div>
-                  <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed ${msg.role === 'assistant'
+                  <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'assistant'
                       ? 'bg-white/5 border border-white/8 text-gray-300'
                       : 'bg-cyan-500/15 border border-cyan-500/20 text-cyan-100'
                     }`}>
@@ -137,6 +161,19 @@ export default function Reports() {
                   </div>
                 </div>
               ))}
+              {loading && (
+                <div className="flex gap-2.5">
+                  <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center bg-gradient-to-tr from-cyan-500 to-blue-600 mt-0.5">
+                    <Bot size={12} className="text-white" />
+                  </div>
+                  <div className="bg-white/5 border border-white/8 rounded-xl px-3.5 py-2.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
@@ -148,11 +185,13 @@ export default function Reports() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ask about an attack or incident…"
-                  className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 outline-none"
+                  disabled={loading}
+                  className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 outline-none disabled:opacity-50"
                 />
                 <button
                   onClick={handleSend}
-                  className="w-7 h-7 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 flex items-center justify-center transition-colors"
+                  disabled={loading || !input.trim()}
+                  className="w-7 h-7 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Send size={13} />
                 </button>

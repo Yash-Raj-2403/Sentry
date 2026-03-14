@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.endpoints import incidents, users, agents, events, feedback, websockets
+from app.api.endpoints import incidents, users, agents, events, feedback, websockets, copilot
 
 api_router = APIRouter()
 api_router.include_router(incidents.router, prefix="/incidents", tags=["incidents"])
@@ -8,3 +8,4 @@ api_router.include_router(agents.router, prefix="/agents", tags=["agents"])
 api_router.include_router(events.router, prefix="/events", tags=["events"])
 api_router.include_router(feedback.router, prefix="/feedback", tags=["feedback"])
 api_router.include_router(websockets.router, prefix="/stream", tags=["websockets"])
+api_router.include_router(copilot.router, prefix="/copilot", tags=["copilot"])
