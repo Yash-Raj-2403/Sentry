@@ -11,7 +11,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white group-hover:bg-blue-500 transition-colors">
                 <ShieldCheck size={18} />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">Sentry.ai</span>
+              <span className="text-xl font-bold text-white tracking-tight">CyberHelm</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Autonomous security for the modern web. We detect, intercept, and fix vulnerabilities in real-time.
@@ -22,7 +22,7 @@ export default function Footer() {
               <SocialIcon icon={<Linkedin size={18} />} />
             </div>
           </div>
-          
+
           <div>
             <h4 className="font-bold text-white mb-6">Product</h4>
             <ul className="space-y-4 text-sm text-gray-400">
@@ -45,14 +45,14 @@ export default function Footer() {
 
           <div>
             <h4 className="font-bold text-white mb-6">Contact</h4>
-            <a href="mailto:support@sentry.ai" className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-500 mb-2 transition-colors">
-              <Mail size={16} /> support@sentry.ai
+            <a href="mailto:support@cyberhelm.ai" className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-500 mb-2 transition-colors">
+              <Mail size={16} /> support@cyberhelm.ai
             </a>
           </div>
         </div>
-        
+
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-          <p>© 2026 Sentry Defense Systems Inc.</p>
+          <p>© 2026 CyberHelm Defense Systems Inc.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link to="#" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <Link to="#" className="hover:text-gray-300 transition-colors">Terms of Service</Link>

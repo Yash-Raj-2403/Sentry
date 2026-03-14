@@ -31,7 +31,7 @@ export default function Reports() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Hello! I'm Sentry Copilot. Once incidents are detected, I can explain attack classifications, map techniques to MITRE ATT&CK, and suggest remediation steps. How can I help?",
+      content: "Hello! I'm CyberHelm Copilot. Once incidents are detected, I can explain attack classifications, map techniques to MITRE ATT&CK, and suggest remediation steps. How can I help?",
     },
   ]);
   const [input, setInput] = useState('');
@@ -112,7 +112,7 @@ export default function Reports() {
                 <Bot size={14} className="text-white" />
               </div>
               <div>
-                <div className="text-sm font-bold text-white">Sentry Copilot</div>
+                <div className="text-sm font-bold text-white">CyberHelm Copilot</div>
                 <div className="text-[10px] text-gray-600">AI security assistant</div>
               </div>
               <div className="ml-auto flex items-center gap-1.5">
@@ -125,16 +125,14 @@ export default function Reports() {
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-white mt-0.5 ${
-                    msg.role === 'assistant' ? 'bg-gradient-to-tr from-cyan-500 to-blue-600' : 'bg-white/10'
-                  }`}>
+                  <div className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-white mt-0.5 ${msg.role === 'assistant' ? 'bg-gradient-to-tr from-cyan-500 to-blue-600' : 'bg-white/10'
+                    }`}>
                     {msg.role === 'assistant' ? <Bot size={12} /> : <User size={12} />}
                   </div>
-                  <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                    msg.role === 'assistant'
+                  <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed ${msg.role === 'assistant'
                       ? 'bg-white/5 border border-white/8 text-gray-300'
                       : 'bg-cyan-500/15 border border-cyan-500/20 text-cyan-100'
-                  }`}>
+                    }`}>
                     {msg.content}
                   </div>
                 </div>

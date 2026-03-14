@@ -2,27 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   padding: 0;
-  background-color: #0d0d11; /* Dark theme base */
+  background-color: #0d0d11;
   color: white;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden; /* Prevent scrolling for SPA */
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* prevent horizontal overflow only */
+  overflow-y: auto;
+  /* allow vertical scroll */
+}
+
+/* ── Premium dark scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #030305;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #22d3ee55, #3b82f655);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #22d3ee, #3b82f6);
 }
 
 /* Custom transitions */
 .fade-enter {
   opacity: 0;
 }
+
 .fade-enter-active {
   opacity: 1;
   transition: opacity 300ms ease-in;
 }
+
 .fade-exit {
   opacity: 1;
 }
+
 .fade-exit-active {
   opacity: 0;
   transition: opacity 300ms ease-in;
