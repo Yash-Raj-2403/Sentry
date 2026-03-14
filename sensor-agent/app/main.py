@@ -35,6 +35,10 @@ class LogHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if event.is_directory:
             return
+
+        # FILTER: Only process honeypot.log
+        if os.path.basename(event.src_path) != "honeypot.log":
+            return
         
         try:
             with open(event.src_path, "r") as f:
@@ -42,9 +46,19 @@ class LogHandler(FileSystemEventHandler):
                 lines = f.readlines()
                 if not lines: return
                 last_line = lines[-1].strip()
-                
+            
+            # Simple extractor for IP in honeypot logs
+            # Format: ... from 127.0.0.1 ...
+            ip_match = re.search(r'from\s+(\d+\.\d+\.\d+\.\d+)', last_line)
+            source_ip = ip_match.group(1) if ip_match else "unknown"
+
+            # Check for bot attack
+            if source_ip != "unknown" and is_bot_attack(source_ip):
+                print(f"Skipping spam from {source_ip}")
+                return
+
             payload = {
-                "source_ip": "unknown",
+                "source_ip": source_ip,
                 "event_type": "log_entry",
                 "raw_payload": last_line,
                 "event_metadata": {"path": event.src_path}

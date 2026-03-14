@@ -139,3 +139,27 @@ BEGIN
     LIMIT match_count;
 END;
 $$;
+
+-- ── Detection State ──────────────────────────────────────────────────────────
+
+-- Table to track connection counts (Burst Traffic)
+CREATE TABLE IF NOT EXISTS detection_rate_limit (
+    ip_address VARCHAR PRIMARY KEY,
+    request_count INTEGER DEFAULT 1,
+    first_seen TIMESTAMPTZ DEFAULT NOW(),
+    last_seen TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Table to track port scans
+-- Stores the list of unique ports scanned by a source->dest pair
+CREATE TABLE IF NOT EXISTS detection_port_scans (
+    id SERIAL PRIMARY KEY,
+    source_ip VARCHAR NOT NULL,
+    dest_ip VARCHAR NOT NULL,
+    scanned_ports INTEGER[] DEFAULT '{}',
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(source_ip, dest_ip)
+);
+
+CREATE INDEX IF NOT EXISTS ix_detection_rate_limit_ip ON detection_rate_limit (ip_address);
+CREATE INDEX IF NOT EXISTS ix_detection_port_scans_src_dst ON detection_port_scans (source_ip, dest_ip);

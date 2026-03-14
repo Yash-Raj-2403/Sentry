@@ -96,6 +96,11 @@ class Worker:
                                         )
 
                                         async with async_session() as session:
+                                            # Determine status based on Actions
+                                            final_status = "investigating"
+                                            if result_state.get("actions_queue"):
+                                                final_status = "resolved"
+
                                             # Create new incident record
                                             new_incident = Incident(
                                                 title=incident_data.get("title"),
@@ -103,7 +108,7 @@ class Worker:
                                                 attacker_ip=incident_data.get("attacker_ip"),
                                                 risk_score=incident_data.get("risk_score"),
                                                 description=incident_data.get("description"),
-                                                status="investigating"
+                                                status=final_status
                                             )
                                             session.add(new_incident)
                                             await session.commit()

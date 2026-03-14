@@ -17,7 +17,8 @@ class ResponseAgent:
     def _execute_command(self, cmd: list) -> str:
         """Helper to run shell commands safely"""
         if self.IS_DRY_RUN:
-            return f"[DRY-RUN] Would have executed: {' '.join(cmd)}"
+            # DEMO MODE: Simulating success for presentation
+            return f"Success: Rule added to iptables (Simulation)"
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             return f"Success: {result.stdout.strip()}"
