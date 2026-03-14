@@ -170,18 +170,43 @@ class DetectionAgent:
             
             # Create Incident Context if suspicious
             if anomaly_detected or state["risk_score"] > 0.3:
-                # If incident object doesn't exist, create a draft
+                final_risk = state["risk_score"]
+
+                # Derive severity from risk score
+                if final_risk >= 0.9:
+                    severity = "critical"
+                elif final_risk >= 0.7:
+                    severity = "high"
+                elif final_risk >= 0.4:
+                    severity = "medium"
+                else:
+                    severity = "low"
+
+                # Derive a meaningful title from event type
+                event_type = event_data.get("event_type", "")
+                if "ssh" in event_type or "auth" in event_type:
+                    title = f"SSH Brute Force Attack from {source_ip}"
+                elif "suspicious" in event_type or "http" in event_type:
+                    title = f"Suspicious HTTP Probe from {source_ip}"
+                elif "honeypot" in event_type:
+                    title = f"Unauthorized Service Access from {source_ip}"
+                elif "scan" in str(event_data.get("raw_payload", "")).lower():
+                    title = f"Port Scan Detected from {source_ip}"
+                else:
+                    title = f"Suspicious Activity from {source_ip}"
+
                 if not state.get("incident"):
                     state["incident"] = {
-                        "title": f"Suspicious Activity from {source_ip}",
-                        "severity": "medium",
+                        "title": title,
+                        "severity": severity,
                         "attacker_ip": source_ip,
                         "description": "Automated detection triggered investigation.",
-                        "risk_score": state["risk_score"]
+                        "risk_score": final_risk
                     }
                 else:
-                    # Update existing incident draft
-                    state["incident"]["risk_score"] = state["risk_score"]
+                    state["incident"]["risk_score"] = final_risk
+                    state["incident"]["severity"] = severity
+                    state["incident"]["title"] = title
             
             state["current_step"] = "investigation"
             return state

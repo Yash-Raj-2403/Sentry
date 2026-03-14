@@ -47,6 +47,18 @@ function StatusBadge({ status }: { status: 'open' | 'investigating' | 'resolved'
 const SEVERITY_FILTERS: Severity[] = ['all', 'critical', 'high', 'medium', 'low'];
 const STATUS_FILTERS:   Status[]   = ['all', 'open', 'investigating', 'resolved'];
 
+function cleanDescription(raw: string | null | undefined): string {
+  if (!raw) return '—';
+  return raw
+    .replace(/#{1,6}\s*/g, '')      // strip # headers
+    .replace(/\*\*(.+?)\*\*/g, '$1') // strip **bold**
+    .replace(/\*(.+?)\*/g, '$1')     // strip *italic*
+    .replace(/\n+/g, ' ')            // collapse newlines
+    .replace(/\s{2,}/g, ' ')         // collapse spaces
+    .trim()
+    .slice(0, 120);
+}
+
 export default function Incidents() {
   const [severity, setSeverity] = useState<Severity>('all');
   const [status,   setStatus]   = useState<Status>('all');
@@ -158,7 +170,7 @@ export default function Incidents() {
                 <div key={incident.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors items-center">
                   <div>
                     <h3 className="text-sm font-semibold text-white">{incident.title}</h3>
-                    <p className="text-xs text-gray-500 truncate">{incident.description}</p>
+                    <p className="text-xs text-gray-500 truncate">{cleanDescription(incident.description)}</p>
                   </div>
                   <div><SeverityBadge level={incident.severity || 'low'} /></div>
                   <div><StatusBadge status={incident.status || 'open'} /></div>

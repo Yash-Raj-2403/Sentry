@@ -21,6 +21,18 @@ function SeverityBadge({ level }: { level: 'critical' | 'high' | 'medium' | 'low
   );
 }
 
+function cleanDescription(raw: string | null | undefined): string {
+  if (!raw) return '—';
+  return raw
+    .replace(/#{1,6}\s*/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/\n+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .slice(0, 120);
+}
+
 // ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, sub, color }: {
   icon: React.ReactNode; label: string; value: string; sub: string; color: string;
@@ -159,7 +171,7 @@ export default function Dashboard() {
                             <SeverityBadge level={incident.severity} />
                             <span className="text-sm font-semibold text-gray-200">{incident.title}</span>
                           </div>
-                          <p className="text-xs text-gray-500">{incident.description}</p>
+                          <p className="text-xs text-gray-500">{cleanDescription(incident.description)}</p>
                        </div>
                        <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-white/10 rounded-lg transition-all text-gray-400 hover:text-white">
                          <ArrowUpRight size={14} />
