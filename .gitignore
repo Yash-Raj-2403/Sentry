@@ -42,3 +42,11 @@ logs/
 
 # OS
 .DS_Store
+
+# Frontend
+node_modules/
+dist/
+.vite/
+coverage/
+.DS_Store
+*.local

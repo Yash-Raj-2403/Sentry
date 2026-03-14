@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .animate-float-slow {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-float-slower {
+    animation: float 8s ease-in-out infinite reverse;
+  }
+  .animate-progress {
+    animation: progress 2s ease-out forwards;
+  }
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-zoom-in {
+    animation: zoom-in 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 1s ease-out forwards;
+    opacity: 0;
+  }
+  /* Stagger delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes zoom-in {
+  0% { opacity: 0; transform: scale(0.9) translateZ(0); filter: blur(4px); }
+  100% { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0); }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #000000; /* Black for Dark Mode */
+  color: #ffffff;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.spline-wrapper {
+  /* Ensure masking applies if used */
+  mask-image: radial-gradient(circle closest-side, black 65%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, black 65%, transparent 100%);
+}
+
+/* Force hide Spline Watermark */
+div[class^="spline-"] > div:last-child,
+div[class^="spline-"] a[href*="spline.design"], 
+canvas + div {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
