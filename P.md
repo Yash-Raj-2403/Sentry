@@ -24,14 +24,14 @@ Traditional security monitoring systems generate large volumes of alerts but lac
 
 **The Goal:**
 Design a collaborative multi-agent AI framework capable of autonomously:
-* Monitoring network and system activity.
-* Detecting anomalies and suspicious behavior patterns.
-* Investigating incidents using contextual reasoning.
-* Calculating risk scores based on dynamic policies.
-* Automatically executing containment or mitigation actions.
-* Explaining cyber incidents in human-readable SOC reports.
-* Streaming incident intelligence in real-time to analysts.
-* Supporting human-in-the-loop override mechanisms.
+* **Active Prevention:** Stopping attacks at the gate (e.g., dynamically adjusting firewall rules via iptables/UFW or applying edge rate-limits for bot attacks).
+* **Monitoring & Detection:** Observing network/system activity, identifying anomalies, and bypassing LLM latency for massive volumetric attacks using edge-side dumb filters.
+* **Contextual Investigation:** Investigating incidents using reasoning and semantic memory (pgvector).
+* **Decision Making:** Calculating risk scores based on dynamic policies.
+* **Post-Penetration Containment:** Automatically executing micro-segmentation (network severing) or process assassination if a system is breached.
+* **Automated Recovery:** Rolling back configurations to known-good states and utilizing file system snapshots (ZFS/Btrfs) to heal ransomware damage.
+* **Reporting & Explanation:** Generating human-readable SOC reports mapping to MITRE ATT&CK.
+* **Human-in-the-Loop (HITL):** Enforcing manual approvals for destructive mitigations.
 
 The system must continuously improve detection accuracy by learning from historical incidents and evolving threat patterns.
 
@@ -42,11 +42,12 @@ The system must continuously improve detection accuracy by learning from histori
 `Monitored Host Logs` → `Sensor Agent` → `Backend Event Ingestion API` → `Event Queue`
 
 **AI Agent Pipeline:**
-1. Detection Agent
-2. Investigation Agent
+1. Detection Agent (With Edge-Side Rate Limiter Bypass for Bots)
+2. Investigation Agent (With Vector Memory Integration)
 3. Decision Agent
-4. Response Agent
-5. Explanation Agent
+4. Response & Containment Agent
+5. Remediation Agent (Recovery & Healing)
+6. Explanation Agent
 
 Incident state updates must be stored in a database and broadcast via WebSocket to:
 * **SOC Dashboard Website**
@@ -109,10 +110,11 @@ multi-agent-cyber-defense/
   * Secure event transmission module
 
 * **`backend-core/`**
-  * Detection agent implementation
-  * Investigation reasoning agent
+  * Detection agent implementation (handling edge filters for volumetric bot attacks)
+  * Investigation reasoning agent (with pgvector RAG memory)
   * Decision and risk-scoring engine
-  * Automated response execution layer
+  * Automated response & containment execution layer (iptables, netcat kills, micro-segmentation)
+  * Remediation & healing agent (config rollbacks, ZFS snapshot triggers)
   * Explanation agent SOC report generator
   * Agent orchestration state machine
   * Redis streaming pipeline
@@ -182,11 +184,16 @@ multi-agent-cyber-defense/
 * **Formula:** `risk_score = anomaly_score × attack_velocity × asset_criticality`
 * Choose action: monitor, rate limit, block IP, isolate host.
 
-### Response Agent
-* Execute firewall block command.
-* Optionally simulate host isolation.
-* Verify execution success.
+### Response & Containment Agent
+* **Active Prevention:** Execute direct firewall commands (e.g., `iptables -A INPUT -s [IP] -j DROP`).
+* **Post-Penetration Containment:** Perform micro-segmentation by severing network interfaces (e.g., `ip link set eth0 down`) excluding the Admin tunnel.
+* **Process Assassination:** Kill persistent back-door processes (e.g., `kill -9 <PID>`).
+* Verify execution success and handle Human-in-the-Loop constraints for high-risk actions.
 * Store response logs.
+
+### Remediation Agent
+* **Configuration Healing:** Roll back critical poisoned files (e.g., `/etc/shadow`) to known-good encrypted snapshots.
+* **Ransomware Recovery:** Trigger file system snapshot restorations (ZFS/Btrfs) to undo file encryption damages automatically.
 
 ### Explanation Agent
 * Generate SOC-style incident report.
