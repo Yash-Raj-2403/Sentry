@@ -7,6 +7,7 @@ from app.agents.detection import DetectionAgent
 from app.agents.investigation import InvestigationAgent
 from app.agents.decision import DecisionAgent
 from app.agents.response import ResponseAgent
+from app.agents.remediation import RemediationAgent
 from app.agents.explanation import ExplanationAgent
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ detection_agent = DetectionAgent()
 investigation_agent = InvestigationAgent()
 decision_agent = DecisionAgent()
 response_agent = ResponseAgent()
+remediation_agent = RemediationAgent()
 explanation_agent = ExplanationAgent()
 
 # Define Node Wrapper Functions (as pure async functions for LangGraph)
@@ -37,6 +39,10 @@ async def run_decision(state):
 async def run_response(state):
     logger.info("Running NODE: Response")
     return await response_agent.execute(state)
+
+async def run_remediation(state):
+    logger.info("Running NODE: Remediation")
+    return await remediation_agent.remediate(state)
 
 async def run_explanation(state):
     logger.info("Running NODE: Explanation")
@@ -63,6 +69,7 @@ workflow.add_node("detection", run_detection)
 workflow.add_node("investigation", run_investigation)
 workflow.add_node("decision", run_decision)
 workflow.add_node("response", run_response)
+workflow.add_node("remediation", run_remediation)
 workflow.add_node("explanation", run_explanation)
 
 workflow.set_entry_point("detection")
@@ -87,7 +94,8 @@ workflow.add_conditional_edges(
     }
 )
 
-workflow.add_edge("response", "explanation")
+workflow.add_edge("response", "remediation")
+workflow.add_edge("remediation", "explanation")
 workflow.add_edge("explanation", END)
 
 # Compile

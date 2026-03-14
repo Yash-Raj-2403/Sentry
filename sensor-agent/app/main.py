@@ -3,11 +3,33 @@ from watchdog.events import FileSystemEventHandler
 import time
 import requests
 import os
+import re
+from collections import defaultdict
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1/events/")
+
+# Volumetric Bot Filter setup
+# We drop traffic if an IP hits more than 100 requests in a 10 second window
+RATE_LIMIT_WINDOW = 10 
+RATE_LIMIT_THRESHOLD = 50
+ip_tracker = defaultdict(list)
+
+def is_bot_attack(ip: str) -> bool:
+    """
+    Edge-side dump filter to prevent AI Denial-of-Service.
+    Returns True if IP is spamming, False otherwise.
+    """
+    now = time.time()
+    # Clean old timestamps
+    ip_tracker[ip] = [t for t in ip_tracker[ip] if now - t < RATE_LIMIT_WINDOW]
+    ip_tracker[ip].append(now)
+    
+    if len(ip_tracker[ip]) > RATE_LIMIT_THRESHOLD:
+        return True
+    return False
 
 class LogHandler(FileSystemEventHandler):
     def on_modified(self, event):
@@ -29,10 +51,17 @@ class LogHandler(FileSystemEventHandler):
             }
             
             # Simple IP extraction for demo
-            import re
             ip_match = re.search(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", last_line)
             if ip_match:
-                payload["source_ip"] = ip_match.group(1)
+                source_ip = ip_match.group(1)
+                payload["source_ip"] = source_ip
+                
+                # Volumetric Filter Check
+                if is_bot_attack(source_ip):
+                    print(f"🛑 [EDGE FILTER] Imminent Bot Attack from {source_ip}. Dropping locally. Bypassing AI bottleneck.")
+                    # Optionally execute local OS iptables command immediately here
+                    # os.system(f"iptables -A INPUT -s {source_ip} -j DROP")
+                    return
             
             # Simple Port extraction for demo
             port_match = re.search(r"port (\d+)", last_line)
