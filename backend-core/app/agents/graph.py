@@ -59,7 +59,7 @@ def route_after_detection(state):
 def route_after_decision(state):
     if state.get("actions_queue"):
         return "response"
-    return "end"
+    return "explanation"
 
 
 # Define the Graph
@@ -90,7 +90,7 @@ workflow.add_conditional_edges(
     route_after_decision,
     {
         "response": "response",
-        "end": END
+        "explanation": "explanation"
     }
 )
 

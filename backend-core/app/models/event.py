@@ -17,6 +17,5 @@ class SecurityEvent(SQLModel, table=False):
     event_type: str = "network_connection" # log_entry, network_connection, etc.
     severity: Optional[str] = "low"
     raw_payload: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict, sa_column_kwargs={"type_": "JSON"})
+    event_metadata: Dict[str, Any] = Field(default_factory=dict, sa_column_kwargs={"type_": "JSON"})
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)

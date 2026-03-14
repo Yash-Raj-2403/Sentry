@@ -47,7 +47,7 @@ class LogHandler(FileSystemEventHandler):
                 "source_ip": "unknown",
                 "event_type": "log_entry",
                 "raw_payload": last_line,
-                "metadata": {"path": event.src_path}
+                "event_metadata": {"path": event.src_path}
             }
             
             # Simple IP extraction for demo
