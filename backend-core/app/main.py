@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.api.api import api_router
 from app.core.config import settings
 from app.db.session import init_db
+import app.models # Important: Import models to register them with SQLModel metadata
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

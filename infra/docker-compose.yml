@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  backend-core:
+    build: 
+      context: ../backend-core
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./sentry_db.sqlite
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - redis
+    volumes:
+      - ../backend-core:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  backend-worker:
+    build: 
+      context: ../backend-core
+    environment:
+      - DATABASE_URL=sqlite:///./sentry_db.sqlite
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - redis
+      - backend-core
+    volumes:
+      - ../backend-core:/app
+    command: python -m app.worker
+
+  sensor-agent:
+    build: 
+      context: ../sensor-agent
+    environment:
+      - BACKEND_URL=http://backend-core:8000/api/v1/events/
+      - LOG_DIR=/logs
+    volumes:
+      - ../sensor-agent:/app
+      - ./logs:/logs # Mount local logs folder
+    depends_on:
+      - backend-core
+    command: python -m app.main
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # Optional: Attacker container for demo
+  # attacker:
+  #   image: kalilinux/kali-rolling
+  #   command: tail -f /dev/null
