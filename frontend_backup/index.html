@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spline Landing Page Integration</title>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
+    <style>
+        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; background-color: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; }
+        /* Oversize slightly to push bottom-right logo off-screen as a fallback */
+        spline-viewer { 
+            width: calc(100% + 200px); 
+            height: calc(100% + 200px); 
+            position: absolute; 
+            top: -50px; 
+            left: -50px; 
+            z-index: 0; 
+        }
+        h1 { position: relative; z-index: 1; font-size: 4rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events: none; }
+        p { position: relative; z-index: 1; font-size: 1.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events: none; }
+    </style>
+</head>
+<body>
+    <!-- Spline Viewer Integration -->
+    <spline-viewer url="https://prod.spline.design/4qRO9S4kaptqjRXc/scene.splinecode"></spline-viewer>
+
+    <script>
+        // Recursive function to deeply search for text in Shadow DOMs
+        function deepRemoveText(root, searchText) {
+            if (!root) return;
+
+            // Helper to check a node
+            const checkNode = (node) => {
+                // 1. Check Text Nodes
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node.textContent && node.textContent.includes(searchText)) {
+                        // Found text, remove the parent element to be safe
+                        if (node.parentNode) {
+                            node.parentNode.remove();
+                            console.log('Removed element via text match:', searchText);
+                        }
+                    }
+                } 
+                // 2. Check Element Nodes
+                else if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Check direct text content of element (for simple generic containers)
+                    // Be careful not to delete broad containers, only leaves or small ones
+                    if (node.childNodes.length === 0 && node.textContent.includes(searchText)) {
+                         node.remove();
+                         return;
+                    }
+                    
+                    // Specific check for Spline Logo ID
+                    if (node.id === 'logo') {
+                        node.style.display = 'none';
+                        node.remove();
+                        console.log('Removed #logo element');
+                        return; // Stop processing this branch
+                    }
+                    
+                    // Traverse children
+                    Array.from(node.childNodes).forEach(checkNode);
+
+                    // Traverse Shadow DOM if present
+                    if (node.shadowRoot) {
+                        deepRemoveText(node.shadowRoot, searchText);
+                    }
+                }
+            };
+
+            // Start traversal depending on root type
+            if (root.childNodes) {
+                Array.from(root.childNodes).forEach(checkNode);
+            }
+        }
+
+        const cleanSpline = () => {
+            const viewer = document.querySelector('spline-viewer');
+            if (viewer) {
+                // Method 1: Inject CSS into shadow root
+                if (viewer.shadowRoot && !viewer.shadowRoot.querySelector('#anti-logo-style')) {
+                   const style = document.createElement('style');
+                   style.id = 'anti-logo-style';
+                   style.textContent = `
+                       #logo, a[href*="spline.design"] { display: none !important; pointer-events: none !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+                   `;
+                   viewer.shadowRoot.appendChild(style);
+                }
+
+                // Method 2: Deep text extraction and removal
+                if (viewer.shadowRoot) {
+                    deepRemoveText(viewer.shadowRoot, 'Built with Spline');
+                }
+            }
+            requestAnimationFrame(cleanSpline);
+        };
+
+        cleanSpline();
+    </script>
+</body>
+</html>

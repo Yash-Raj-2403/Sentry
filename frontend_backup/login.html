@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sentry</title>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
+    <style>
+        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; background-color: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Background Spline Viewer */
+        spline-viewer { 
+            width: calc(100% + 200px); 
+            height: calc(100% + 200px); 
+            position: absolute; 
+            top: -50px; 
+            left: -50px; 
+            z-index: 0; 
+        }
+
+        /* Login Container */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 320px;
+            text-align: center;
+        }
+
+        h2 { margin-top: 0; margin-bottom: 20px; font-weight: 300; letter-spacing: 1px; }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #7b61ff; /* Spline purple accent */
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        button {
+            width: 100%;
+            background-color: #7b61ff;
+            color: white;
+            padding: 12px 15px;
+            margin: 20px 0 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #6a50e5;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .helper-text {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        a { color: #7b61ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <spline-viewer url="https://prod.spline.design/4qRO9S4kaptqjRXc/scene.splinecode"></spline-viewer>
+
+    <!-- Login Form -->
+    <div class="login-container">
+        <h2>Sentry Access</h2>
+        <form action="#" method="POST">
+            <input type="email" placeholder="Email" required>
+            <input type="password" placeholder="Password" required>
+            <button type="submit">Sign In</button>
+        </form>
+        <div class="helper-text">
+            <p>Don't have an account? <a href="#">Register</a></p>
+        </div>
+    </div>
+
+    <!-- Logo Removal Script -->
+    <script>
+        // Recursive function to deeply search for text in Shadow DOMs
+        function deepRemoveText(root, searchText) {
+            if (!root) return;
+
+            const checkNode = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node.textContent && node.textContent.includes(searchText)) {
+                        if (node.parentNode) node.parentNode.remove();
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (node.childNodes.length === 0 && node.textContent.includes(searchText)) {
+                         node.remove();
+                         return;
+                    }
+                    if (node.id === 'logo') {
+                        node.style.display = 'none';
+                        node.remove();
+                        return;
+                    }
+                    Array.from(node.childNodes).forEach(checkNode);
+                    if (node.shadowRoot) deepRemoveText(node.shadowRoot, searchText);
+                }
+            };
+            if (root.childNodes) Array.from(root.childNodes).forEach(checkNode);
+        }
+
+        const cleanSpline = () => {
+            const viewer = document.querySelector('spline-viewer');
+            if (viewer) {
+                if (viewer.shadowRoot && !viewer.shadowRoot.querySelector('#anti-logo-style')) {
+                   const style = document.createElement('style');
+                   style.id = 'anti-logo-style';
+                   style.textContent = `
+                       #logo, a[href*="spline.design"] { display: none !important; pointer-events: none !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+                   `;
+                   viewer.shadowRoot.appendChild(style);
+                }
+                if (viewer.shadowRoot) {
+                    deepRemoveText(viewer.shadowRoot, 'Built with Spline');
+                }
+            }
+            requestAnimationFrame(cleanSpline);
+        };
+        cleanSpline();
+    </script>
+</body>
+</html>
