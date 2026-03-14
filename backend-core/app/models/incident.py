@@ -11,3 +11,4 @@ class Incident(SQLModel, table=True):
     description: Optional[str] = None
     attacker_ip: Optional[str] = None
     risk_score: float = 0.0
+    feedback: Optional[str] = None # "true_positive", "false_positive", "benign"
