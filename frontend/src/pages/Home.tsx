@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { 
   ShieldCheck, 
   Zap, 
-  Terminal, 
   LayoutDashboard, 
   GitMerge, 
   Cpu, 
@@ -84,21 +83,13 @@ export default function Home() {
                 </div>
               </Link>
               
-              <button className="px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-sm text-gray-300 rounded-xl font-bold hover:bg-white/10 hover:border-white/20 hover:text-white transition-all hover:scale-[1.02] flex items-center gap-2 group">
-                <Terminal size={18} className="text-gray-500 group-hover:text-white transition-colors" />
-                <span>Read Docs</span>
-              </button>
+              <Link to="/dashboard" className="px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-sm text-gray-300 rounded-xl font-bold hover:bg-white/10 hover:border-white/20 hover:text-white transition-all hover:scale-[1.02] flex items-center gap-2 group">
+                <LayoutDashboard size={18} className="text-gray-500 group-hover:text-white transition-colors" />
+                <span>View Dashboard</span>
+              </Link>
              </div>
             
-            <div className="mt-14 border-t border-white/5 pt-8">
-               <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Trusted by engineering teams at</p>
-               <div className="flex gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                 <span className="text-xl font-black text-gray-400 hover:text-white transition-colors cursor-default">ACME</span>
-                 <span className="text-xl font-bold text-gray-400 hover:text-white transition-colors cursor-default font-serif italic">GlobalBank</span>
-                 <span className="text-xl font-black text-gray-400 hover:text-white transition-colors cursor-default tracking-tighter">NEBULA</span>
-                 <span className="text-xl font-bold text-gray-400 hover:text-white transition-colors cursor-default font-mono">CODE_CORP</span>
-               </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -155,19 +146,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section - Glassmorphic Metallic Panel */}
-      <section className="py-24 bg-[#08080a] relative overflow-hidden my-10 border-y border-white/5">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
-        
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center divide-x divide-white/5">
-            <StatCard value="0.05s" label="Response Time" />
-            <StatCard value="24/7" label="Active Monitoring" />
-            <StatCard value="100%" label="Code Coverage" />
-            <StatCard value="0" label="False Positives" />
-          </div>
-        </div>
-      </section>
+
       
       {/* CTA Section */}
       <section className="py-32 px-6">
@@ -215,11 +194,4 @@ function FeatureCard({ icon, title, desc, headerColor }: { icon: React.ReactNode
   );
 }
 
-function StatCard({ value, label }: { value: string, label: string }) {
-  return (
-    <div className="px-4">
-      <div className="text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-600 mb-2 tracking-tighter">{value}</div>
-      <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">{label}</div>
-    </div>
-  );
-}
+
