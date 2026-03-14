@@ -44,8 +44,10 @@ async def run_explanation(state):
 
 # Define Conditional Logic
 def route_after_detection(state):
+    logger.info(f"Routing check. Risk: {state.get('risk_score')}, Incident: {state.get('incident')}")
     if state.get("incident"):
         return "investigation"
+    logger.info("Routing to END")
     return "end"
 
 def route_after_decision(state):

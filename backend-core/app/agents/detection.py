@@ -60,6 +60,12 @@ class DetectionAgent:
                     self.port_scan_state[pair_key] = set()
 
             # Update State
+            input_severity = event_data.get("severity", "low").lower()
+            if input_severity == "high":
+                 risk_increment += 0.8
+                 anomaly_detected = True
+                 investigation_log.append(f"DETECTED: High severity event reported by source {event_data.get('source')}")
+
             state["risk_score"] = min(1.0, risk_score + risk_increment)
             state["investigation_log"] = investigation_log
             

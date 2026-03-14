@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # Groq (High-performance inference)
     GROQ_API_KEY: Optional[str] = None
-    GROQ_MODEL: str = "mixtral-8x7b-32768"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
 
     # Supabase (External DB & Auth if used)
     SUPABASE_URL: Optional[str] = None

@@ -15,6 +15,7 @@ class SecurityEvent(SQLModel, table=False):
     protocol: Optional[str] = "TCP"
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     event_type: str = "network_connection" # log_entry, network_connection, etc.
+    severity: Optional[str] = "low"
     raw_payload: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict, sa_column_kwargs={"type_": "JSON"})
 

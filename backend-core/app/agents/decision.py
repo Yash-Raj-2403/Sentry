@@ -45,7 +45,8 @@ class DecisionAgent:
             if action != "monitor":
                 actions_queue.append(action)
                 
-            state["risk_score"] = risk_score
+            # Update state with FINAL calculated risk
+            state["risk_score"] = final_risk
             state["actions_queue"] = actions_queue
             state["investigation_log"] = investigation_log
             state["current_step"] = "response" if actions_queue else "end"
