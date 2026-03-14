@@ -163,7 +163,7 @@ class Worker:
                                             else:
                                                 logger.debug(
                                                     "[Worker] Embedding skipped "
-                                                    "(Supabase/OpenAI not configured)"
+                                                    "(Supabase/Groq not configured)"
                                                 )
                                         except Exception as embed_err:
                                             logger.warning(

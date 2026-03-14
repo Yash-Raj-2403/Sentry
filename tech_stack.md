@@ -7,7 +7,7 @@ This document outlines the core technologies powering Sentry, explaining **why**
 ## 1. Core Backend AI & Orchestration
 
 ### Python (The Foundation)
-**Why:** While Rust or Go are faster for raw packet processing, Python holds absolute dominance over the AI and Machine Learning orchestration ecosystem (LangChain, OpenAI SDKs, PyTorch). Because Sentry relies heavily on Agentic reasoning over raw mathematical packet drops, Python ensures rapid integration with cutting-edge LLMs.
+**Why:** While Rust or Go are faster for raw packet processing, Python holds absolute dominance over the AI and Machine Learning orchestration ecosystem (LangChain, Groq SDKs, PyTorch). Because Sentry relies heavily on Agentic reasoning over raw mathematical packet drops, Python ensures rapid integration with cutting-edge LLMs.
 
 ### LangGraph (State Machine Orchestration)
 **Why:** Unlike Microsoft AutoGen or CrewAI (which are inherently conversational and prone to infinite chat loops), LangGraph operates as a **deterministic State Machine**. In cybersecurity, if an agent fails, the system cannot hang in a conversational debate; it must follow strict routing (e.g., fallback to quarantine). LangGraph strictly pipes the `AgentState` via cyclic nodes ensuring strict operational flow: `Detection -> Investigation -> Decision -> Response & Containment -> Remediation -> Explanation`.
@@ -37,11 +37,8 @@ Using Redis sets a buffer. The `FastAPI` instance absorbs the web traffic and in
 
 ## 4. LLM & Inference Engines
 
-### Groq / LPU API (Fast Inference)
-**Why:** Speed is critical to blocking a fast-moving actor. Traditional CUDA-based LLM architectures are limited by memory bandwidth. Groq's specialized Language Processing Units (LPUs) deliver over 800 tokens-per-second, dropping "time-to-first-thought" to fractions of a second, allowing Sentry to calculate dynamic mitigations almost infinitely faster than standard GPU-hosted models.
-
-### OpenAI GPT-4o / Claude 3.5 (Heavy Reasoning)
-**Why:** Used selectively, primarily by the `ExplanationAgent` at the end of the pipeline. High cognitive models are used when the immediate threat is neutralized, and compiling dense forensic logs into a human-readable "Executive Summary" is required.
+### Groq / LPU API (Fast Inference & Heavy Reasoning)
+**Why:** Speed is critical to blocking a fast-moving actor. Traditional CUDA-based LLM architectures are limited by memory bandwidth. Groq's specialized Language Processing Units (LPUs) deliver over 800 tokens-per-second, dropping "time-to-first-thought" to fractions of a second. This allows Sentry to calculate dynamic mitigations infinitely faster than standard GPU-hosted models. We use Groq exclusively for both the fast detection pipelines and the heavy reasoning tasks (`ExplanationAgent` and `RemediationAgent`) to keep the infrastructure footprint simple, inexpensive, and incredibly fast.
 
 ---
 
