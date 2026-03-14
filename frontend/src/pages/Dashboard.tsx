@@ -102,13 +102,17 @@ export default function Dashboard() {
         const res = await fetch('http://localhost:8000/api/v1/incidents/');
         const data = await res.json();
         const active = data.filter((i: any) => i.status !== 'resolved').length;
-        
+        const recentCount = data.filter((i: any) => {
+          const age = Date.now() - new Date(i.created_at).getTime();
+          return age < 60_000;
+        }).length;
+
         // Update stats
         setStats(prev => ({
           ...prev,
           activeIncidents: active,
-          eventsPerMin: Math.floor(Math.random() * 20) + 120, // Simulated activity
-          avgResponseTime: active > 0 ? "240ms" : "0ms" 
+          eventsPerMin: recentCount,
+          avgResponseTime: active > 0 ? "240ms" : "0ms"
         }));
         
         // Show recent incidents in feed

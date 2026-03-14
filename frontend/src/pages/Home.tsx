@@ -1,168 +1,596 @@
 // @ts-ignore
 import { Link } from 'react-router-dom';
 import {
-  ShieldCheck,
   Zap,
   LayoutDashboard,
   GitMerge,
   Cpu,
   ArrowRight,
   Server,
-  Lock
+  Lock,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
+  Radio,
 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+/* ─────────────────────────────────────────────
+   Feature Card
+───────────────────────────────────────────── */
+function FeatureCard({
+  icon,
+  title,
+  desc,
+  accent,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  accent: string; // e.g. "#22d3ee"
+}) {
+  return (
+    <div
+      className="group relative rounded-2xl p-px overflow-hidden transition-transform duration-300 hover:-translate-y-1"
+      style={{
+        background: `linear-gradient(135deg, ${accent}33 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`,
+      }}
+    >
+      {/* Inner card */}
+      <div
+        className="relative h-full rounded-[15px] p-7 overflow-hidden"
+        style={{ background: 'rgba(12,12,32,0.85)', backdropFilter: 'blur(16px)' }}
+      >
+        {/* Corner glow */}
+        <div
+          className="absolute -top-10 -left-10 w-32 h-32 rounded-full opacity-30 blur-2xl pointer-events-none transition-opacity duration-500 group-hover:opacity-60"
+          style={{ background: accent }}
+        />
+
+        <div className="relative z-10">
+          {/* Icon */}
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
+            style={{
+              background: `${accent}18`,
+              border: `1px solid ${accent}35`,
+            }}
+          >
+            {icon}
+          </div>
+          <h4 className="text-[16px] font-bold text-white mb-2 tracking-tight">{title}</h4>
+          <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(180,185,220,0.7)' }}>{desc}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Stat Pill
+───────────────────────────────────────────── */
+function StatPill({ value, label, color }: { value: string; label: string; color: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-2xl font-bold" style={{ color }}>{value}</span>
+      <span className="text-[11px] mt-0.5" style={{ color: 'rgba(180,185,220,0.5)' }}>{label}</span>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Home Page
+───────────────────────────────────────────── */
 export default function Home() {
   return (
-    <div className="bg-[#030305] text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden min-h-screen flex flex-col">
+    <div
+      className="text-white font-sans overflow-x-hidden min-h-screen flex flex-col"
+      style={{ background: '#080818', color: 'white' }}
+    >
       <Header />
 
-      {/* Hero Section */}
-      <div className="relative h-screen w-full overflow-hidden bg-[#030305] flex items-center">
-        {/* Metallic Background Gradients */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-          <div className="absolute top-[-20%] right-[-10%] w-[80vw] h-[80vw] bg-blue-900/10 rounded-full blur-[100px] mix-blend-screen opacity-40"></div>
-          <div className="absolute bottom-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-cyan-900/10 rounded-full blur-[100px] mix-blend-screen opacity-30"></div>
-          {/* Metallic noise texture overlay */}
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+      {/* ═══════════════════════════════════════
+          HERO
+      ══════════════════════════════════════ */}
+      <section className="relative h-screen w-full overflow-hidden flex items-center">
+
+        {/* ── Vibrant mesh-gradient background ── */}
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          {/* Indigo bloom — top center */}
+          <div className="absolute" style={{
+            top: '-20%', left: '20%',
+            width: '900px', height: '700px',
+            background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.45) 0%, transparent 65%)',
+            filter: 'blur(1px)',
+          }} />
+          {/* Cyan flare — right */}
+          <div className="absolute" style={{
+            top: '-10%', right: '-5%',
+            width: '700px', height: '700px',
+            background: 'radial-gradient(ellipse at center, rgba(34,211,238,0.30) 0%, transparent 60%)',
+          }} />
+          {/* Violet pool — bottom left */}
+          <div className="absolute" style={{
+            bottom: '-15%', left: '-5%',
+            width: '700px', height: '600px',
+            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.28) 0%, transparent 65%)',
+          }} />
+          {/* Pink accent — bottom right */}
+          <div className="absolute" style={{
+            bottom: '0%', right: '10%',
+            width: '500px', height: '400px',
+            background: 'radial-gradient(ellipse at center, rgba(236,72,153,0.15) 0%, transparent 65%)',
+          }} />
+          {/* Noise texture */}
+          <div
+            className="absolute inset-0 mix-blend-overlay"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")`,
+              opacity: 0.4,
+            }}
+          />
+          {/* Subtle dot grid */}
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
+            backgroundSize: '44px 44px',
+            opacity: 0.6,
+          }} />
         </div>
 
-        {/* Floating Abstract Shapes for Metallic Feel */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-[20%] left-[10%] w-px h-[200px] bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent"></div>
-          <div className="absolute bottom-[20%] right-[20%] w-[200px] h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
-        </div>
-
-        {/* 3D Scene Wrapper */}
-        <div className="absolute inset-0 z-0 pointer-events-auto overflow-hidden">
-          <div className="absolute w-full h-full lg:w-[130%] lg:h-[130%] lg:translate-x-[5%] lg:-translate-y-[5%] flex items-center justify-center">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
+        {/* ── Spline Robot — right side ── */}
+        <div
+          className="absolute inset-0 pointer-events-auto overflow-hidden"
+          style={{ zIndex: 1 }}
+        >
+          {/* The iframe: offset right */}
+          <div className="absolute top-0 right-0 w-full h-full lg:w-[65%] lg:right-0">
             <iframe
               src="https://my.spline.design/nexbotrobotcharacterconcept-f9AJhCw5Liun2d3dqvHMsAC5/"
               frameBorder="0"
               width="100%"
               height="100%"
-              className="w-full h-full scale-[1.0] lg:scale-[0.85] pointer-events-auto brightness-110 contrast-110 saturate-100 transition-opacity duration-1000 ease-out"
-              style={{ maskImage: "radial-gradient(circle closest-side, black 60%, transparent 100%)" }}
-            ></iframe>
+              className="w-full h-full pointer-events-auto"
+              style={{
+                transform: 'scale(1.05)',
+                transformOrigin: 'center center',
+                filter: 'brightness(1.1) saturate(1.2)',
+                maskImage: 'radial-gradient(ellipse 80% 90% at 60% 50%, black 50%, transparent 85%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 80% 90% at 60% 50%, black 50%, transparent 85%)',
+              }}
+            />
+            {/* Cover "Built with Spline" watermark at bottom-left of canvas */}
+            <div
+              className="absolute bottom-0 left-0 pointer-events-none"
+              style={{
+                width: '220px',
+                height: '48px',
+                background: 'linear-gradient(to right, #080818 60%, transparent 100%)',
+                zIndex: 10,
+              }}
+            />
+            {/* Also cover bottom-right corner */}
+            <div
+              className="absolute bottom-0 right-0 pointer-events-none"
+              style={{
+                width: '220px',
+                height: '48px',
+                background: 'linear-gradient(to left, #080818 60%, transparent 100%)',
+                zIndex: 10,
+              }}
+            />
           </div>
-          {/* Gradient Overlay for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#030305] via-[#030305]/80 to-transparent pointer-events-none"></div>
+          {/* Gradient veil over robot for left edge blending */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, #080818 18%, rgba(8,8,24,0.7) 38%, rgba(8,8,24,0.1) 58%, transparent 75%)',
+            }}
+          />
+          {/* Top & bottom fade */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(180deg, rgba(8,8,24,0.5) 0%, transparent 15%, transparent 80%, rgba(8,8,24,0.6) 100%)',
+            }}
+          />
         </div>
 
-        {/* Hero Content */}
-        <div className="max-w-7xl mx-auto w-full h-full flex flex-col lg:flex-row items-center justify-between px-6 relative z-10 pointer-events-none">
-          <div className="flex-1 max-w-xl pt-32 lg:pt-0 pointer-events-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-cyan-300 text-[11px] font-bold uppercase tracking-wider mb-8 shadow-[0_0_20px_-5px_rgba(34,211,238,0.3)] backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+        {/* ── Hero Text Content ── */}
+        <div
+          className="relative max-w-7xl mx-auto w-full flex items-center px-8"
+          style={{ zIndex: 10, pointerEvents: 'none' }}
+        >
+          <div
+            className="max-w-[580px] opacity-0 animate-fade-in-up"
+            style={{ animationDelay: '0.15s', animationFillMode: 'forwards', pointerEvents: 'auto' }}
+          >
+            {/* Headline */}
+            <h1 className="font-bold tracking-tight leading-[1.06] mb-6" style={{ fontSize: 'clamp(42px, 5.5vw, 72px)' }}>
+              <span
+                className="block text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(160deg, #ffffff 0%, #c7d2fe 60%, #a5b4fc 100%)' }}
+              >
+                Autonomous
               </span>
-              System Online v2.4
-            </div>
-
-            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6 text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-500 drop-shadow-sm">
-              Autonomous security for your <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 animate-shine bg-[length:200%_auto]">
+              <span
+                className="block text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(160deg, #e0e7ff 0%, #c7d2fe 50%, #a5b4fc 100%)' }}
+              >
+                security for your
+              </span>
+              <span
+                className="block text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(90deg, #22d3ee 0%, #818cf8 40%, #e879f9 100%)' }}
+              >
                 infrastructure
               </span>
             </h1>
 
-            <p className="text-lg text-gray-400 mb-10 leading-relaxed max-w-lg font-medium">
-              Stop chasing alerts. CyberHelm's AI swarm investigates, patches, and deploys fixes before threats can exploit them.
+            {/* Subheading */}
+            <p
+              className="text-[17px] leading-relaxed mb-10 max-w-[480px]"
+              style={{ color: 'rgba(196,202,240,0.75)' }}
+            >
+              CyberHelm's AI agent swarm autonomously investigates,
+              patches, and deploys fixes — before threats can exploit them.
             </p>
 
-            <div className="flex flex-wrap gap-4">
-              <Link to="/register" className="group relative px-8 py-4 bg-white text-black rounded-xl font-bold overflow-hidden transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.3)]">
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-200 opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative flex items-center gap-2">
-                  Start Free Trial
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </div>
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-3 mb-10">
+              <Link
+                to="/register"
+                className="group relative flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-[15px] overflow-hidden transition-all duration-200 hover:scale-[1.03]"
+                style={{
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
+                  boxShadow: '0 0 32px -6px rgba(139,92,246,0.7), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  color: 'white',
+                }}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Get Started
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </span>
+                {/* Shimmer on hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%)' }}
+                />
               </Link>
 
-              <Link to="/dashboard" className="px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-sm text-gray-300 rounded-xl font-bold hover:bg-white/10 hover:border-white/20 hover:text-white transition-all hover:scale-[1.02] flex items-center gap-2 group">
-                <LayoutDashboard size={18} className="text-gray-500 group-hover:text-white transition-colors" />
-                <span>View Dashboard</span>
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-[15px] transition-all duration-200 hover:scale-[1.03]"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: 'rgba(210,215,255,0.85)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+                }}
+              >
+                <LayoutDashboard size={16} style={{ opacity: 0.6 }} />
+                View Dashboard
               </Link>
             </div>
 
-
+            {/* Trust row */}
+            <div className="flex items-center gap-6">
+              {[
+                { icon: <ShieldCheck size={13} />,   text: 'Zero-trust by default' },
+                { icon: <Radio size={13} />,          text: 'Real-time response' },
+                { icon: <CheckCircle2 size={13} />,   text: 'SOC 2 ready' },
+              ].map((b) => (
+                <div
+                  key={b.text}
+                  className="flex items-center gap-1.5 text-[11px]"
+                  style={{ color: 'rgba(160,165,210,0.55)' }}
+                >
+                  <span style={{ opacity: 0.7 }}>{b.icon}</span>
+                  {b.text}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Features Grid - Metallic Cards */}
-      <section id="features" className="py-24 px-6 bg-[#030305] relative z-20">
-        <div className="max-w-7xl mx-auto">
+        {/* ── Stats bar — bottom of hero ── */}
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none opacity-0 animate-fade-in-up"
+          style={{ zIndex: 10, animationDelay: '0.6s', animationFillMode: 'forwards' }}
+        >
+          <div
+            className="mx-auto max-w-7xl px-8 pb-10"
+          >
+            <div
+              className="inline-flex items-center gap-10 px-8 py-4 rounded-2xl"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(20px)',
+                boxShadow: '0 4px 32px rgba(0,0,0,0.4)',
+              }}
+            >
+              <StatPill value="1,247" label="Threats Blocked"  color="#22d3ee" />
+              <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <StatPill value="5"     label="Active Agents"    color="#a78bfa" />
+              <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <StatPill value="<2ms"  label="Avg Response"     color="#f0abfc" />
+              <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <StatPill value="99.9%" label="Uptime"           color="#6ee7b7" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          FEATURES
+      ══════════════════════════════════════ */}
+      <section
+        id="features"
+        className="relative py-32 px-6 overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, #080818 0%, #0b0b22 100%)' }}
+      >
+        {/* Section background accent */}
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          <div className="absolute" style={{
+            top: '0%', left: '50%', transform: 'translateX(-50%)',
+            width: '900px', height: '400px',
+            background: 'radial-gradient(ellipse at top, rgba(99,102,241,0.18) 0%, transparent 70%)',
+          }} />
+          <div className="absolute" style={{
+            bottom: '0%', right: '10%',
+            width: '500px', height: '300px',
+            background: 'radial-gradient(ellipse at center, rgba(168,85,247,0.12) 0%, transparent 65%)',
+          }} />
+        </div>
+
+        {/* Top divider glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px pointer-events-none" style={{
+          width: '70%',
+          background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.4), rgba(34,211,238,0.3), transparent)',
+        }} />
+
+        <div className="relative max-w-7xl mx-auto" style={{ zIndex: 1 }}>
+          {/* Section header */}
           <div className="text-center mb-20">
-            <h2 className="text-sm font-bold text-cyan-500 uppercase tracking-widest mb-3">Capabilities</h2>
-            <h3 className="text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4">Autonomous Defense Grid</h3>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Replace manual playbooks with intelligent agents. CyberHelm monitors every layer of your stack.
+            <div
+              className="inline-block text-[11px] font-bold uppercase tracking-widest mb-5 px-3.5 py-1.5 rounded-full"
+              style={{
+                color: '#a78bfa',
+                background: 'rgba(139,92,246,0.1)',
+                border: '1px solid rgba(139,92,246,0.25)',
+              }}
+            >
+              Capabilities
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5">
+              <span
+                className="text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(160deg, #ffffff 0%, #c7d2fe 100%)' }}
+              >
+                Autonomous Defense Grid
+              </span>
+            </h2>
+            <p
+              className="text-lg max-w-2xl mx-auto leading-relaxed"
+              style={{ color: 'rgba(180,185,220,0.65)' }}
+            >
+              Replace manual playbooks with intelligent agents. CyberHelm monitors every layer of your stack —
+              from network edge to application code.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             <FeatureCard
-              icon={<Zap className="text-amber-400" />}
+              icon={<Zap size={20} color="#fbbf24" />}
               title="Instant Remediation"
               desc="Detects threats and applies patches instantly. Reduce MTTR from days to milliseconds."
-              headerColor="from-amber-500/20 to-amber-900/5"
+              accent="#f59e0b"
             />
             <FeatureCard
-              icon={<Cpu className="text-cyan-400" />}
+              icon={<Cpu size={20} color="#22d3ee" />}
               title="Agent Swarm"
               desc="Decentralized agents coordinate to investigate anomalies across your entire infrastructure graph."
-              headerColor="from-cyan-500/20 to-cyan-900/5"
+              accent="#22d3ee"
             />
             <FeatureCard
-              icon={<GitMerge className="text-indigo-400" />}
+              icon={<GitMerge size={20} color="#818cf8" />}
               title="Self-Healing Code"
-              desc="CyberHelm doesn't just block attacks; it identifies the vulnerability and suggests code fixes."
-              headerColor="from-indigo-500/20 to-indigo-900/5"
+              desc="CyberHelm identifies the vulnerability and auto-generates code fixes — not just firewall rules."
+              accent="#818cf8"
             />
             <FeatureCard
-              icon={<Lock className="text-emerald-400" />}
+              icon={<Lock size={20} color="#34d399" />}
               title="Perimeter Zero"
               desc="Identity-aware security that assumes breach and verifies every request, internally and externally."
-              headerColor="from-emerald-500/20 to-emerald-900/5"
+              accent="#34d399"
             />
             <FeatureCard
-              icon={<LayoutDashboard className="text-purple-400" />}
+              icon={<AlertTriangle size={20} color="#c084fc" />}
               title="Live Telemetry"
-              desc="Real-time visualization of attack vectors as they happen. Watch the swarm neutralize them live."
-              headerColor="from-purple-500/20 to-purple-900/5"
+              desc="Real-time visualization of attack vectors as they happen. Watch the swarm neutralize threats live."
+              accent="#a855f7"
             />
             <FeatureCard
-              icon={<Server className="text-rose-400" />}
+              icon={<Server size={20} color="#fb7185" />}
               title="Infrastructure As Code"
               desc="Deep integration with Terraform and Kubernetes to enforce security policies at the deploy level."
-              headerColor="from-rose-500/20 to-rose-900/5"
+              accent="#f43f5e"
             />
           </div>
         </div>
       </section>
 
+      {/* ═══════════════════════════════════════
+          HOW IT WORKS  (3 steps)
+      ══════════════════════════════════════ */}
+      <section
+        className="relative py-28 px-6 overflow-hidden"
+        style={{ background: '#0b0b22' }}
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          <div className="absolute" style={{
+            top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '800px', height: '400px',
+            background: 'radial-gradient(ellipse at center, rgba(34,211,238,0.08) 0%, transparent 65%)',
+          }} />
+        </div>
 
-
-      {/* CTA Section */}
-      <section className="py-32 px-6">
-        <div className="max-w-4xl mx-auto text-center relative">
-          {/* Glow behind text */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-500/20 blur-[100px] rounded-full -z-10"></div>
-
-          <h2 className="text-5xl lg:text-7xl font-bold text-white mb-8 tracking-tighter">
-            Ready to automate?
+        <div className="relative max-w-5xl mx-auto text-center" style={{ zIndex: 1 }}>
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-widest mb-5 px-3.5 py-1.5 rounded-full"
+            style={{
+              color: '#67e8f9',
+              background: 'rgba(34,211,238,0.08)',
+              border: '1px solid rgba(34,211,238,0.22)',
+            }}
+          >
+            How It Works
+          </div>
+          <h2
+            className="text-4xl lg:text-5xl font-bold tracking-tight mb-16"
+            style={{ color: '#e0e7ff' }}
+          >
+            From threat to fix in milliseconds
           </h2>
-          <p className="text-xl text-gray-400 mb-12 max-w-xl mx-auto">
-            Join the future of DevSecOps. Deploy CyberHelm today and let the agents handle the rest.
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '01',
+                title: 'Detect',
+                desc: 'Sensor agents continuously monitor network traffic, logs, and API calls for anomalies.',
+                color: '#22d3ee',
+              },
+              {
+                step: '02',
+                title: 'Analyse',
+                desc: 'The AI orchestrator assembles a swarm to triage, correlate, and classify the incident.',
+                color: '#a78bfa',
+              },
+              {
+                step: '03',
+                title: 'Remediate',
+                desc: 'Patch agents isolate the threat, apply fixes, and update policies — zero human delay.',
+                color: '#f0abfc',
+              },
+            ].map((s) => (
+              <div
+                key={s.step}
+                className="relative rounded-2xl p-8 text-left"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  backdropFilter: 'blur(12px)',
+                }}
+              >
+                <div
+                  className="text-[42px] font-black mb-4 leading-none"
+                  style={{
+                    color: s.color,
+                    opacity: 0.25,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {s.step}
+                </div>
+                <h3
+                  className="text-xl font-bold mb-3"
+                  style={{ color: s.color }}
+                >
+                  {s.title}
+                </h3>
+                <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(180,185,220,0.65)' }}>
+                  {s.desc}
+                </p>
+                {/* Bottom accent */}
+                <div
+                  className="absolute bottom-0 left-8 right-8 h-px"
+                  style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          CTA
+      ══════════════════════════════════════ */}
+      <section
+        className="relative py-32 px-6 overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, #0b0b22 0%, #080818 100%)' }}
+      >
+        {/* Big glow orb */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: 0 }}>
+          <div style={{
+            width: '700px', height: '400px',
+            background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.22) 0%, rgba(168,85,247,0.1) 40%, transparent 70%)',
+            filter: 'blur(2px)',
+          }} />
+        </div>
+
+        {/* Top divider */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px pointer-events-none" style={{
+          width: '50%',
+          background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.35), transparent)',
+        }} />
+
+        <div className="relative max-w-3xl mx-auto text-center" style={{ zIndex: 1 }}>
+          <h2
+            className="text-5xl lg:text-[68px] font-bold tracking-tighter mb-6 leading-[1.05]"
+          >
+            <span
+              className="text-transparent bg-clip-text block"
+              style={{ backgroundImage: 'linear-gradient(160deg, #ffffff 0%, #c7d2fe 60%, #a5b4fc 100%)' }}
+            >
+              Ready to
+            </span>
+            <span
+              className="text-transparent bg-clip-text block"
+              style={{ backgroundImage: 'linear-gradient(90deg, #22d3ee 0%, #818cf8 50%, #e879f9 100%)' }}
+            >
+              automate security?
+            </span>
+          </h2>
+          <p
+            className="text-xl mb-12 max-w-xl mx-auto leading-relaxed"
+            style={{ color: 'rgba(196,202,240,0.65)' }}
+          >
+            Deploy CyberHelm today and let the AI swarm handle every threat —
+            so your team can focus on building.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register" className="px-10 py-4 bg-white text-black text-lg rounded-xl font-bold hover:bg-gray-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
-              Get Started Now
+            <Link
+              to="/register"
+              className="group relative flex items-center justify-center gap-2 px-10 py-4 rounded-xl font-bold text-[17px] overflow-hidden transition-all duration-200 hover:scale-[1.03]"
+              style={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
+                boxShadow: '0 0 48px -8px rgba(139,92,246,0.65), inset 0 1px 0 rgba(255,255,255,0.15)',
+                color: 'white',
+              }}
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Get Started Free
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </span>
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%)' }}
+              />
+            </Link>
+            <Link
+              to="/dashboard"
+              className="flex items-center justify-center gap-2 px-10 py-4 rounded-xl font-bold text-[17px] transition-all duration-200 hover:scale-[1.03]"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'rgba(210,215,255,0.8)',
+                backdropFilter: 'blur(12px)',
+              }}
+            >
+              Explore Dashboard
             </Link>
           </div>
         </div>
@@ -172,26 +600,3 @@ export default function Home() {
     </div>
   );
 }
-
-function FeatureCard({ icon, title, desc, headerColor }: { icon: React.ReactNode, title: string, desc: string, headerColor: string }) {
-  return (
-    <div className="relative group p-1 rounded-3xl bg-gradient-to-b from-white/10 to-white/0 hover:from-white/20 hover:to-white/5 transition-all duration-300">
-      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 rounded-3xl transition-opacity duration-500 pointer-events-none"></div>
-
-      <div className="h-full bg-[#08080a] rounded-[22px] p-8 border border-white/5 relative overflow-hidden">
-        {/* Subtle color glow at the top */}
-        <div className={`absolute top-0 left-0 w-full h-32 bg-gradient-to-b ${headerColor} opacity-50 blur-2xl`}></div>
-
-        <div className="relative z-10">
-          <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 text-2xl shadow-inner shadow-white/5">
-            {icon}
-          </div>
-          <h4 className="text-xl font-bold text-white mb-3 tracking-tight">{title}</h4>
-          <p className="text-gray-400 leading-relaxed text-sm font-medium">{desc}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
