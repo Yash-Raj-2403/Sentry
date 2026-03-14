@@ -9,9 +9,10 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}Stopping any existing Sentry processes...${NC}"
 pkill -f "uvicorn app.main" || true
 pkill -f "app.worker" || true
-pkill -f "sensor-agent" || true
+pkill -f "sensor-agent/app/main.py" || true
 pkill -f "honeypot.py" || true
 pkill -f "vite" || true
+sleep 1
 
 # Ensure logs directory exists
 mkdir -p logs
@@ -26,6 +27,9 @@ if ! pgrep redis-server > /dev/null; then
     fi
 fi
 
+# Trim the event stream to prevent queue buildup across restarts
+redis-cli DEL sentry:events > /dev/null 2>&1 || true
+
 echo -e "${GREEN}Starting Backend API...${NC}"
 cd backend-core
 source .venv/bin/activate
@@ -37,7 +41,7 @@ cd ..
 echo -e "${GREEN}Starting AI Worker...${NC}"
 cd backend-core
 export PYTHONPATH=$PYTHONPATH:.
-nohup python3 -m app.worker > ../logs/worker.log 2>&1 &
+nohup python3 -u -m app.worker > ../logs/worker.log 2>&1 &
 WORKER_PID=$!
 echo "Worker running (PID: $WORKER_PID)"
 cd ..
@@ -47,12 +51,11 @@ cd sensor-agent
 source .venv/bin/activate
 export LOG_DIR="../logs"
 # Start Honeypot
-# Redirect stdout/stderr to separate file to avoid conflict with internal logging
-nohup python3 app/honeypot.py > ../logs/honeypot_console.log 2>&1 &
+nohup python3 -u app/honeypot.py > ../logs/honeypot_console.log 2>&1 &
 HONEYPOT_PID=$!
 echo "Honeypot running (PID: $HONEYPOT_PID)"
 # Start Sensor
-nohup python3 app/main.py > ../logs/sensor.log 2>&1 &
+nohup python3 -u app/main.py > ../logs/sensor.log 2>&1 &
 SENSOR_PID=$!
 echo "Sensor running (PID: $SENSOR_PID)"
 cd ..

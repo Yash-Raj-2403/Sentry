@@ -4,6 +4,7 @@ import time
 import requests
 import os
 import re
+import threading
 from collections import defaultdict
 from dotenv import load_dotenv
 
@@ -13,7 +14,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1/events/")
 
 # Volumetric Bot Filter setup
 # We drop traffic if an IP hits more than 100 requests in a 10 second window
-RATE_LIMIT_WINDOW = 10 
+RATE_LIMIT_WINDOW = 10
 RATE_LIMIT_THRESHOLD = 50
 ip_tracker = defaultdict(list)
 
@@ -26,12 +27,31 @@ def is_bot_attack(ip: str) -> bool:
     # Clean old timestamps
     ip_tracker[ip] = [t for t in ip_tracker[ip] if now - t < RATE_LIMIT_WINDOW]
     ip_tracker[ip].append(now)
-    
+
     if len(ip_tracker[ip]) > RATE_LIMIT_THRESHOLD:
         return True
     return False
 
+def classify_event(line: str) -> dict:
+    """
+    Derive severity and event_type from the raw honeypot log line.
+    """
+    lower = line.lower()
+    if "auth attempt" in lower or "ssh" in lower:
+        return {"severity": "high", "event_type": "ssh_auth_attempt"}
+    elif "suspicious" in lower:
+        return {"severity": "high", "event_type": "suspicious_request"}
+    elif "web request" in lower or "http" in lower:
+        return {"severity": "medium", "event_type": "http_probe"}
+    elif "honeypot" in lower:
+        return {"severity": "medium", "event_type": "honeypot_connection"}
+    return {"severity": "low", "event_type": "log_entry"}
+
 class LogHandler(FileSystemEventHandler):
+    def __init__(self):
+        self._file_position = 0
+        self._lock = threading.Lock()
+
     def on_modified(self, event):
         if event.is_directory:
             return
@@ -39,54 +59,52 @@ class LogHandler(FileSystemEventHandler):
         # FILTER: Only process honeypot.log
         if os.path.basename(event.src_path) != "honeypot.log":
             return
-        
+
         try:
-            with open(event.src_path, "r") as f:
-                # In robust implementation, seek to last position
-                lines = f.readlines()
-                if not lines: return
-                last_line = lines[-1].strip()
-            
-            # Simple extractor for IP in honeypot logs
-            # Format: ... from 127.0.0.1 ...
-            ip_match = re.search(r'from\s+(\d+\.\d+\.\d+\.\d+)', last_line)
-            source_ip = ip_match.group(1) if ip_match else "unknown"
+            with self._lock:
+                with open(event.src_path, "r") as f:
+                    f.seek(self._file_position)
+                    new_lines = f.readlines()
+                    self._file_position = f.tell()
 
-            # Check for bot attack
-            if source_ip != "unknown" and is_bot_attack(source_ip):
-                print(f"Skipping spam from {source_ip}")
-                return
+            for raw_line in new_lines:
+                line = raw_line.strip()
+                if not line:
+                    continue
 
-            payload = {
-                "source_ip": source_ip,
-                "event_type": "log_entry",
-                "raw_payload": last_line,
-                "event_metadata": {"path": event.src_path}
-            }
-            
-            # Simple IP extraction for demo
-            ip_match = re.search(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", last_line)
-            if ip_match:
-                source_ip = ip_match.group(1)
-                payload["source_ip"] = source_ip
-                
-                # Volumetric Filter Check
-                if is_bot_attack(source_ip):
-                    print(f"🛑 [EDGE FILTER] Imminent Bot Attack from {source_ip}. Dropping locally. Bypassing AI bottleneck.")
-                    # Optionally execute local OS iptables command immediately here
-                    # os.system(f"iptables -A INPUT -s {source_ip} -j DROP")
-                    return
-            
-            # Simple Port extraction for demo
-            port_match = re.search(r"port (\d+)", last_line)
-            if port_match:
-                payload["destination_port"] = int(port_match.group(1))
+                # Extract IP
+                ip_match = re.search(r'from\s+(\d+\.\d+\.\d+\.\d+)', line)
+                source_ip = ip_match.group(1) if ip_match else "unknown"
 
-            response = requests.post(BACKEND_URL, json=payload)
-            if response.status_code == 200:
-                print(f"Sent event: {last_line[:50]}...")
-            else:
-                print(f"Failed to send event: {response.text}")
+                # Check for bot attack
+                if source_ip != "unknown" and is_bot_attack(source_ip):
+                    print(f"[EDGE FILTER] Dropping spam from {source_ip}")
+                    continue
+
+                payload = {
+                    "source_ip": source_ip,
+                    "raw_payload": line,
+                    "event_metadata": {"path": event.src_path}
+                }
+
+                # Extract port
+                port_match = re.search(r"port (\d+)", line)
+                if port_match:
+                    payload["destination_port"] = int(port_match.group(1))
+
+                # Classify event
+                meta = classify_event(line)
+                payload["severity"] = meta["severity"]
+                payload["event_type"] = meta["event_type"]
+
+                try:
+                    response = requests.post(BACKEND_URL, json=payload, timeout=5)
+                    if response.status_code == 200:
+                        print(f"Sent event [{meta['severity']}]: {line[:60]}...")
+                    else:
+                        print(f"Failed to send event: {response.text}")
+                except Exception as e:
+                    print(f"Error sending event: {e}")
 
         except Exception as e:
             print(f"Error processing log: {e}")
@@ -94,6 +112,12 @@ class LogHandler(FileSystemEventHandler):
 def run_sensor():
     path = os.getenv("LOG_DIR", ".")
     event_handler = LogHandler()
+
+    # Initialise position to end of current file so we only process NEW entries
+    log_path = os.path.join(path, "honeypot.log")
+    if os.path.exists(log_path):
+        event_handler._file_position = os.path.getsize(log_path)
+
     observer = Observer()
     observer.schedule(event_handler, path, recursive=False)
     observer.start()
@@ -107,3 +131,4 @@ def run_sensor():
 
 if __name__ == "__main__":
     run_sensor()
+

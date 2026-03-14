@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { ShieldAlert, Filter, Search, Clock, ArrowRight, FileText } from 'lucide-react';
+import { ShieldAlert, Filter, Search, Clock, ArrowRight, FileText, ChevronRight } from 'lucide-react';
 
 type Severity = 'all' | 'critical' | 'high' | 'medium' | 'low';
 type Status   = 'all' | 'open' | 'investigating' | 'resolved';
+
+interface Incident {
+    id: number;
+    title: string;
+    severity: 'critical' | 'high' | 'medium' | 'low';
+    status: 'open' | 'investigating' | 'resolved';
+    attacker_ip: string;
+    created_at: string;
+    description: string;
+    risk_score: number;
+}
 
 function SeverityBadge({ level }: { level: 'critical' | 'high' | 'medium' | 'low' }) {
   const map = {
@@ -40,6 +51,35 @@ export default function Incidents() {
   const [severity, setSeverity] = useState<Severity>('all');
   const [status,   setStatus]   = useState<Status>('all');
   const [search,   setSearch]   = useState('');
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/incidents/');
+        const data = await response.json();
+        setIncidents(data);
+      } catch (error) {
+        console.error('Failed to fetch incidents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncidents();
+    const interval = setInterval(fetchIncidents, 2000); // Poll every 2s
+    return () => clearInterval(interval);
+  }, []);
+  
+  const filteredIncidents = incidents.filter(inc => {
+      const matchSeverity = severity === 'all' || inc.severity === severity;
+      const matchStatus = status === 'all' || inc.status === status;
+      const matchSearch = inc.title.toLowerCase().includes(search.toLowerCase()) || 
+                          inc.attacker_ip?.includes(search) || 
+                          inc.description?.toLowerCase().includes(search.toLowerCase());
+      return matchSeverity && matchStatus && matchSearch;
+  });
 
   return (
     <div className="min-h-screen bg-[#030305] text-white font-sans flex flex-col">
@@ -112,16 +152,33 @@ export default function Incidents() {
             <span></span>
           </div>
 
-          {/* Empty state */}
+          {filteredIncidents.length > 0 ? (
+            <div>
+              {filteredIncidents.map((incident) => (
+                <div key={incident.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors items-center">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">{incident.title}</h3>
+                    <p className="text-xs text-gray-500 truncate">{incident.description}</p>
+                  </div>
+                  <div><SeverityBadge level={incident.severity || 'low'} /></div>
+                  <div><StatusBadge status={incident.status || 'open'} /></div>
+                  <div className="text-sm font-mono text-gray-400">{incident.attacker_ip}</div>
+                  <div className="text-xs text-gray-500">{new Date(incident.created_at).toLocaleTimeString()}</div>
+                  <div className="text-right">
+                    <ChevronRight size={16} className="text-gray-600" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+          /* Empty state */
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
               <ShieldAlert size={24} className="text-gray-600" />
             </div>
-            <p className="text-sm font-semibold text-gray-400 mb-2">No incidents detected</p>
-            <p className="text-xs text-gray-600 max-w-sm">
-              Incidents will appear here once the backend agent pipeline begins processing events from the sensor agent.
-            </p>
+            <p className="text-sm font-semibold text-gray-400 mb-2">No incidents detected{loading ? ' (Loading...)' : ''}</p>
           </div>
+          )}
         </div>
 
         {/* Investigation timeline placeholder */}

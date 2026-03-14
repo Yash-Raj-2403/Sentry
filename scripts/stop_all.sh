@@ -13,7 +13,7 @@ echo "Killing Worker..."
 pkill -f "app.worker" || true
 
 echo "Killing Sensor..."
-pkill -f "sensor-agent" || true
+pkill -f "sensor-agent/app/main.py" || true
 pkill -f "honeypot.py" || true
 
 echo "Killing Frontend..."
