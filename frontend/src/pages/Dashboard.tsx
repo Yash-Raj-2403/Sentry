@@ -198,7 +198,7 @@ export default function Dashboard() {
                           </h4>
                           <span className="text-[11px] font-mono whitespace-nowrap"
                             style={{ color: 'rgba(100,105,160,0.6)' }}>
-                            {inc.created_at ? new Date(inc.created_at).toLocaleTimeString() : '12:42:05'}
+                            {inc.created_at ? new Date(inc.created_at + 'Z').toLocaleTimeString() : '12:42:05'}
                           </span>
                         </div>
                         <p className="text-[12px] truncate" style={{ color: 'rgba(120,125,175,0.55)' }}>

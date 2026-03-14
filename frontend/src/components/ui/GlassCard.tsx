@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 interface GlassCardProps extends HTMLMotionProps<"div"> {
   children: React.ReactNode;
   className?: string;
-  variant?: 'default' | 'scanner' | 'hexagon' | 'cyber';
+  variant?: 'default' | 'scanner' | 'hexagon' | 'cyber' | 'scanline' | 'hover';
   glowColor?: string;
   intensity?: 'low' | 'medium' | 'high';
 }
@@ -28,10 +28,12 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
     const baseStyles = "relative bg-black/40 backdrop-blur-xl transition-all duration-300 overflow-hidden";
     
     const variants = {
-      default: "rounded-2xl border border-white/10",
-      scanner: "rounded-lg border-x-2 border-x-transparent border-y border-y-white/10 clip-path-polygon-[0_0,100%_0,100%_100%,0_100%] before:absolute before:inset-0 before:bg-gradient-to-b before:from-transparent before:via-white/5 before:to-transparent before:animate-scan",
-      hexagon: "clip-path-hexagon bg-black/60", // Requires custom clip-path in CSS or inline
-      cyber: "rounded-none border border-white/10 before:absolute before:-top-1 before:-left-1 before:w-3 before:h-3 before:border-t-2 before:border-l-2 before:border-white/50 after:absolute after:-bottom-1 after:-right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-white/50",
+      default:  "rounded-2xl border border-white/10",
+      scanner:  "rounded-lg border-x-2 border-x-transparent border-y border-y-white/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-transparent before:via-white/5 before:to-transparent before:animate-scan",
+      hexagon:  "clip-path-hexagon bg-black/60",
+      cyber:    "rounded-none border border-white/10 before:absolute before:-top-1 before:-left-1 before:w-3 before:h-3 before:border-t-2 before:border-l-2 before:border-white/50 after:absolute after:-bottom-1 after:-right-1 after:w-3 after:h-3 after:border-b-2 after:border-r-2 after:border-white/50",
+      scanline: "rounded-2xl border border-white/10 before:absolute before:inset-0 before:bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(255,255,255,0.015)_2px,rgba(255,255,255,0.015)_4px)] before:pointer-events-none",
+      hover:    "rounded-2xl border border-white/10 hover:border-white/20",
     };
 
     return (
@@ -66,7 +68,7 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
             </>
         )}
 
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col h-full">
             {children}
         </div>
       </motion.div>

@@ -21,22 +21,37 @@ export default function Reports() {
     { role: 'assistant', content: "Hello! I'm CyberHelm Copilot. Once incidents are detected, I can explain attack classifications, map techniques to MITRE ATT&CK, and suggest remediation steps. How can I help?" },
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, loading]);
 
-  const handleSend = (e?: React.FormEvent) => {
+  const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const trimmed = input.trim();
-    if (!trimmed) return;
-    setMessages(prev => [
-      ...prev,
-      { role: 'user', content: trimmed },
-      { role: 'assistant', content: 'The backend Copilot API is not yet connected. Once integrated, I will provide contextual analysis and MITRE ATT&CK explanations for each query.' },
-    ]);
+    if (!trimmed || loading) return;
+
+    const history = messages;
+    setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
     setInput('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/copilot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: trimmed, history }),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Error reaching Copilot backend. Make sure the API server is running.' }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,11 +113,10 @@ export default function Reports() {
                 </div>
 
                 {/* Right Panel: Copilot Chat */}
-                <div className="lg:col-span-5 flex flex-col min-h-[500px]">
-                    <GlassCard className="flex-1 flex flex-col p-0 overflow-hidden relative" variant="scanline" intensity="medium">
-                        
+                <div className="lg:col-span-5 h-[calc(100vh-180px)] flex flex-col rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl overflow-hidden">
+
                         {/* Chat Header */}
-                        <div className="p-4 border-b border-white/10 bg-black/20 flex items-center justify-between backdrop-blur-md z-10">
+                        <div className="shrink-0 p-4 border-b border-white/10 bg-black/20 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                                     <Bot className="text-white" size={20} />
@@ -120,9 +134,9 @@ export default function Reports() {
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black/40">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                              {messages.map((msg, i) => (
-                                 <motion.div 
+                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -130,38 +144,52 @@ export default function Reports() {
                                  >
                                      <div className={cn(
                                          "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
-                                         msg.role === 'assistant' 
-                                            ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400" 
+                                         msg.role === 'assistant'
+                                            ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
                                             : "bg-gray-700/50 border-gray-600/50 text-gray-300"
                                      )}>
                                          {msg.role === 'assistant' ? <Bot size={14} /> : <User size={14} />}
                                      </div>
                                      <div className={cn(
                                          "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
-                                         msg.role === 'assistant' 
-                                            ? "bg-white/5 border border-white/10 text-gray-300 rounded-tl-none" 
+                                         msg.role === 'assistant'
+                                            ? "bg-white/5 border border-white/10 text-gray-300 rounded-tl-none"
                                             : "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 rounded-tr-none"
                                      )}>
                                          {msg.content}
                                      </div>
                                  </motion.div>
                              ))}
+                             {loading && (
+                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
+                                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border bg-indigo-500/10 border-indigo-500/20 text-indigo-400">
+                                         <Bot size={14} />
+                                     </div>
+                                     <div className="bg-white/5 border border-white/10 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1.5">
+                                         <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                         <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                         <span className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                     </div>
+                                 </motion.div>
+                             )}
                              <div ref={messagesEndRef} />
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-md z-10">
+                        <div className="shrink-0 p-4 border-t border-white/10 bg-black/20">
                             <form onSubmit={handleSend} className="relative">
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Ask about threats, indicators, or logs..."
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all font-mono"
+                                    disabled={loading}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all font-mono disabled:opacity-50"
                                 />
-                                <button 
+                                <button
                                     type="submit"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-400 flex items-center justify-center transition-colors border border-indigo-500/30"
+                                    disabled={loading || !input.trim()}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-400 flex items-center justify-center transition-colors border border-indigo-500/30 disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     <Send size={14} />
                                 </button>
@@ -172,7 +200,6 @@ export default function Reports() {
                             </div>
                         </div>
 
-                    </GlassCard>
                 </div>
 
             </div>

@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
-import { 
-  ShieldAlert, Server, Shield, FileText, Settings, LogOut, 
-  LayoutDashboard, Menu, Search, Bell, User, ChevronDown, X 
+import {
+  ShieldAlert, Server, Shield, FileText, Settings, LogOut,
+  LayoutDashboard, Menu, Search, Bell, User, ChevronDown, X
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 
 function Sidebar({ active, onClose }: { active: string, onClose?: () => void }) {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard' },
     { icon: ShieldAlert, label: 'Incidents', id: 'incidents', path: '/incidents' },
@@ -67,7 +76,7 @@ function Sidebar({ active, onClose }: { active: string, onClose?: () => void }) 
       </nav>
 
       <div className="p-4 border-t border-white/5 shrink-0">
-        <button className="flex items-center gap-3 px-3 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 w-full transition-colors">
+        <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 w-full transition-colors">
             <LogOut size={20} />
             <span className="font-medium">Logout</span>
         </button>
@@ -82,8 +91,14 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const location = useLocation();
+  const { user } = useAuth();
   const activeRoute = location.pathname.substring(1) || 'dashboard';
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const displayName = user?.user_metadata?.full_name
+    || user?.email?.split('@')[0]
+    || 'User';
 
   return (
     <div className="min-h-screen bg-[#05050A] text-white font-sans selection:bg-cyan-500/30 overflow-x-hidden">
@@ -148,18 +163,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#05050A]" />
              </button>
 
-             <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+             <Link to="/settings" className="flex items-center gap-3 pl-4 border-l border-white/10 hover:opacity-80 transition-opacity cursor-pointer">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-[1px]">
                     <div className="w-full h-full rounded-full bg-[#05050A] flex items-center justify-center overflow-hidden">
                         <User size={16} className="text-cyan-400" />
                     </div>
                 </div>
                 <div className="hidden md:block text-sm">
-                    <p className="font-semibold text-white leading-none">Admin</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Level 5</p>
+                    <p className="font-semibold text-white leading-none">{displayName}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{user?.email || ''}</p>
                 </div>
-                <ChevronDown size={14} className="text-gray-500 hidden md:block" />
-             </div>
+                <Settings size={16} className="text-gray-500 hover:text-cyan-400 transition-colors hidden md:block" />
+             </Link>
           </div>
         </header>
 

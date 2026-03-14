@@ -174,7 +174,7 @@ export default function Incidents() {
                                     </div>
 
                                     <div className="text-xs text-gray-500">
-                                        {new Date(inc.created_at).toLocaleString()}
+                                        {new Date(inc.created_at + 'Z').toLocaleString()}
                                     </div>
 
                                     <div className="flex justify-end">

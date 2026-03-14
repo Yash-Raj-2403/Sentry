@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 from sqlalchemy import desc
@@ -17,6 +18,7 @@ async def read_incidents(skip: int = 0, limit: int = 100, session: AsyncSession 
 
 @router.post("/", response_model=Incident)
 async def create_incident(incident: Incident, session: AsyncSession = Depends(get_session)):
+    incident.created_at = datetime.now(timezone.utc)
     session.add(incident)
     await session.commit()
     await session.refresh(incident)
